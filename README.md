@@ -40,3 +40,14 @@ Generic crawler framework
         crawler = MySimpleCrawler()
         crawler.start()
         
+## Sample daemon usage
+
+    daemon = CrawlsterDaemon(8)  # 8 processes to be used
+    
+    # registering the crawlers and their
+    # running rules
+    daemon.add_crawler(MyFirstCrawler, PeriodicRun(minutes=60) # run every 60 minutes
+    daemon.add_crawler(MySecondCrawler, PeriodicRun(hours=24)  # run every day
+    daemon.add_crawler(MyThirdCrawler, CrontabRule("0 12 * * *")  # run every day at 12:00PM
+    
+    daemon.start()
