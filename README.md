@@ -40,6 +40,9 @@ Generic crawler framework
         crawler = MySimpleCrawler()
         crawler.start()
         
+        print(crawler.result_count)  # how many results were submitted
+        print(crawler.run_time)  # how long the crawler run (in seconds)
+        
 ## Sample daemon usage
 
     daemon = CrawlsterDaemon(8)  # 8 processes to be used

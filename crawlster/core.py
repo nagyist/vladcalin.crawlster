@@ -28,9 +28,27 @@ class Crawlster(object):
         self.worker_is_busy = [threading.Event() for _ in range(self.worker_threads)]
         self.worker_pool = self.get_worker_pool()
         self._regex_cache = {}
+        self._result_count = 0
+        self._start_time = time.time()
+        self._finish_time = None
+        self._is_running = False
 
         # available utility attributes
         self.http_session = requests.session()
+
+    @property
+    def result_count(self):
+        return self._result_count
+
+    @property
+    def is_running(self):
+        return self._is_running
+
+    @property
+    def run_time(self):
+        if self.is_running:
+            raise RuntimeError("Still running")
+        return self._finish_time - self._start_time
 
     def get_worker_pool(self):
         return [
@@ -72,22 +90,25 @@ class Crawlster(object):
     def process_job(self, func, args, kwargs):
         func(*args, **kwargs)
 
-    def is_running(self):
-        all_workers_idle = [not flag.is_set() for flag in self.worker_is_busy]
-        return self.queue.empty() and all(all_workers_idle)
-
     def start(self):
+        self._is_running = True
         self.start_workers()
         self.schedule_start_steps()
         self.queue.join()
+        self._finish_time = time.time()
+        self._is_running = False
 
     def submit_result(self, **kwargs):
         self.logger.warning("Got result: {}".format(kwargs))
+        handled = False
         for handler_class in self.result_handlers:
             if handler_class().handle_values(**kwargs):
+                handled = True
                 self.logger.debug("Handler {} took care of it!".format(handler_class.__name__))
             else:
                 self.logger.debug("Handler {} said it can't be done".format(handler_class.__name__))
+        if handled:
+            self._result_count += 1
 
     def urlget(self, url, method="get", **kwargs):
         # handle headers
@@ -101,7 +122,7 @@ class Crawlster(object):
         method = getattr(self.http_session, method)
         return method(url, headers=headers, **kwargs)
 
-    def regex_search(self, pattern, text, flags=None):
+    def regex_search(self, pattern, text, flags=0):
         pattern_key = "{}${}".format(pattern, flags)
         if pattern_key not in self._regex_cache:
             compiled = re.compile(pattern, flags=flags)
