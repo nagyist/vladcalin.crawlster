@@ -11,6 +11,7 @@ setup(
     install_requires=[
         "requests",
         "beautifulsoup4",
-        "colorlog"
+        "colorlog",
+        "cronex"
     ]
 )
