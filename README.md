@@ -1,0 +1,2 @@
+# crawlster
+Generic crawler framework
