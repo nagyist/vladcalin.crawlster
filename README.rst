@@ -1,4 +1,6 @@
-# crawlster
+crawlster
+=========
+
 Generic crawler framework
 
 
@@ -16,6 +18,8 @@ the current working directory.
 
 Sample usage
 ------------
+
+::
 
     class MyResultHandler(ResultHandler):
         fields = {
@@ -58,6 +62,8 @@ Sample usage
         
 Sample daemon usage
 -------------------
+
+::
 
     daemon = CrawlsterDaemon(8)  # 8 processes to be used
     
