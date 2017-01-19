@@ -75,6 +75,7 @@ Crawler methods
 
 - ``schedule(func, *args, **kwargs)`` - schedules the given function
   to be executed by a worker
+- ``submit_result(**values)`` - saves a result instance
 - ``urlget(url, method="get", **kwargs)`` - makes a HTTP request to
   the given url with the given method. Equivalent to requests.method(url, **kwargs)
 - ``regex_search(pattern, text, flags)`` - searches the first occurrence
