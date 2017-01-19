@@ -2,6 +2,17 @@
 Generic crawler framework
 
 
+## Using the CLI
+
+In order to create a crawler template, execute
+
+::
+
+    python -m crawlster newcrawler mycrawlername [--author=myname]
+    
+This command will generate the ``mycrawlername_crawler.py`` crawler in
+the current working directory.
+
 ## Sample usage
 
     class MyResultHandler(ResultHandler):
