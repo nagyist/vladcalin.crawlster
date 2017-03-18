@@ -1,8 +1,25 @@
-# crawlster
+crawlster
+=========
+
 Generic crawler framework
 
 
-## Sample usage
+Using the CLI
+-------------
+
+In order to create a crawler template, execute
+
+::
+
+    python -m crawlster newcrawler mycrawlername [--author=myname]
+    
+This command will generate the ``mycrawlername_crawler.py`` crawler in
+the current working directory.
+
+Sample usage
+------------
+
+::
 
     class MyResultHandler(ResultHandler):
         fields = {
@@ -43,7 +60,10 @@ Generic crawler framework
         print(crawler.result_count)  # how many results were submitted
         print(crawler.run_time)  # how long the crawler run (in seconds)
         
-## Sample daemon usage
+Sample daemon usage
+-------------------
+
+::
 
     daemon = CrawlsterDaemon(8)  # 8 processes to be used
     
@@ -54,3 +74,17 @@ Generic crawler framework
     daemon.add_crawler(MyThirdCrawler, CrontabRule("0 12 * * *")  # run every day at 12:00PM
     
     daemon.start()
+    
+    
+Crawler methods
+---------------
+
+- ``schedule(func, *args, **kwargs)`` - schedules the given function
+  to be executed by a worker
+- ``submit_result(**values)`` - saves a result instance
+- ``urlget(url, method="get", **kwargs)`` - makes a HTTP request to
+  the given url with the given method. Equivalent to requests.method(url, **kwargs)
+- ``regex_search(pattern, text, flags)`` - searches the first occurrence
+  of the regex pattern in text with the given flags
+- ``parse_html(content)`` - parses the html content in a BeautofulSoup structure.
+  After that, we can use of the result: ``select``, ``xpath``, ``find``, etc
