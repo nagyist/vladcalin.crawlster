@@ -1,4 +1,5 @@
 from multiprocessing.pool import ThreadPool
+import urllib.parse
 import re
 import queue
 import threading
@@ -115,7 +116,7 @@ class Crawlster(object):
         headers = {
             "User-Agent": self.user_agent
         }
-        for k, v in kwargs.pop("headers", {}):
+        for k, v in kwargs.pop("headers", {}).items():
             headers[k] = v
 
         # get callable
@@ -123,13 +124,32 @@ class Crawlster(object):
         return method(url, headers=headers, **kwargs)
 
     def regex_search(self, pattern, text, flags=0):
+        compiled = self._get_cached_regex(flags, pattern)
+        return compiled.search(text)
+
+    def regex_split(self, pattern, text, flags=0):
+        compiled = self._get_cached_regex(flags, pattern)
+        return compiled.split(text)
+
+    def _get_cached_regex(self, flags, pattern):
         pattern_key = "{}${}".format(pattern, flags)
         if pattern_key not in self._regex_cache:
             compiled = re.compile(pattern, flags=flags)
             self._regex_cache[pattern_key] = compiled
         else:
             compiled = self._regex_cache[pattern_key]
-        return compiled.search(text)
+        return compiled
+
+    def regex_findall(self, pattern, text, flags=0):
+        compiled = self._get_cached_regex(flags, pattern)
+        return compiled.findall(text)
 
     def parse_html(self, content):
         return bs4.BeautifulSoup(content, "html.parser")
+
+    def urljoin(self, root, to_join):
+        return urllib.parse.urljoin(root, to_join)
+
+    def get_parsed_content(self, url, method="get", body=None):
+        data = self.urlget(url, method=method, data=body)
+        return self.parse_html(data.text)
