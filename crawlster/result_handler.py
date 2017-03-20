@@ -42,7 +42,7 @@ class JsonLinesHandler(ResultHandler):
     def save_result(self, result):
         with self.file_lock:
             with open(self.filename, "a") as f:
-                f.write(json.dumps(result))
+                f.write(json.dumps(result, default=lambda x: str(x)))
                 f.write("\n")
 
     def can_handle(self, result):
