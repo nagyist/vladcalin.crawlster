@@ -47,6 +47,8 @@ class Crawlster(object):
         self._finish_time = time.time()
         self._is_running = False
 
+    # region workflow methods
+
     def schedule(self, step_func, *args, **kwargs):
         self.queue.put((step_func, args, kwargs))
 
@@ -56,6 +58,10 @@ class Crawlster(object):
             if result_handler.can_handle(kwargs):
                 result_handler.save_result(kwargs)
             self._result_count += 1
+
+    # endregion
+
+    # region utility functions
 
     def urlget(self, url, method="get", **kwargs):
         # handle headers
@@ -69,6 +75,13 @@ class Crawlster(object):
         method = getattr(self.http_session, method)
         return method(url, headers=headers, **kwargs)
 
+    def parse_html(self, content):
+        return bs4.BeautifulSoup(content, "html.parser")
+
+    def get_parsed_content(self, url, method="get", body=None):
+        data = self.urlget(url, method=method, data=body)
+        return self.parse_html(data.text)
+
     def regex_search(self, pattern, text, flags=0):
         compiled = self._get_cached_regex(flags, pattern)
         return compiled.search(text)
@@ -81,15 +94,10 @@ class Crawlster(object):
         compiled = self._get_cached_regex(flags, pattern)
         return compiled.findall(text)
 
-    def parse_html(self, content):
-        return bs4.BeautifulSoup(content, "html.parser")
-
     def urljoin(self, root, to_join):
         return urllib.parse.urljoin(root, to_join)
 
-    def get_parsed_content(self, url, method="get", body=None):
-        data = self.urlget(url, method=method, data=body)
-        return self.parse_html(data.text)
+    # endregion
 
     @property
     def result_count(self):
