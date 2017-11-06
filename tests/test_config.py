@@ -7,6 +7,7 @@ from crawlster.validators import validate_isinstance, validate_required, \
 
 
 def test_config_validate_single_option():
+    old_defined = Configuration.defined_options
     Configuration.defined_options = {
         'test': define(validators=[validate_isinstance(int)], default=None)
     }
@@ -15,6 +16,7 @@ def test_config_validate_single_option():
 
     with pytest.raises(ConfigurationError):
         Configuration({'test': 'not integer'})
+    Configuration.defined_options = old_defined
 
 
 def test_validators_required():
@@ -43,9 +45,11 @@ def test_validators_is_instance():
 
 
 def test_config_accessing_wrong_option():
+    old_defined = Configuration.defined_options
     Configuration.defined_options = {
         'test': define(validators=[validate_isinstance(int)], default=None)
     }
     config = Configuration({'test': 10})
     with pytest.raises(OptionNotDefinedError):
         config.get('hello')
+    Configuration.defined_options = old_defined

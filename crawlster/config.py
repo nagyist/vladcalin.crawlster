@@ -34,7 +34,9 @@ class Configuration(object):
 
     defined_options = {
         'http.user_agent': define(validators=[validate_isinstance(str)],
-                                  default=DEFAULT_USER_AGENT)
+                                  default=DEFAULT_USER_AGENT),
+        'helpers.imports': define(
+            validators=[validate_isinstance(list)], default=[])
     }
 
     def __init__(self, options):
