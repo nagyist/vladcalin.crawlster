@@ -16,3 +16,14 @@ def validate_isinstance(req_type):
                 ))
 
     return actual_validator
+
+
+def one_of(*choices):
+    def actual_validator(value):
+        if value not in choices:
+            raise ValidationError(
+                'Expected one of {} but got {} instead'.format(
+                    ', '.join(choices), value
+                ))
+
+    return actual_validator

@@ -1,14 +1,25 @@
+import os
 from collections import namedtuple
+import secrets
 
-from .validators import ValidationError, validate_isinstance
+from .validators import ValidationError, validate_isinstance, one_of
+from .exceptions import ConfigurationError, OptionNotDefinedError, \
+    MissingValueError
+
 
 # Option specs
 
-OptionSpec = namedtuple('OptionSpec', 'validators default')
+
+class Option(object):
+    def __init__(self, validators, default=None, required=False):
+        self.validators = validators
+        self.default = default
+        self.required = required
 
 
-def define(validators, default):
-    return OptionSpec(validators=validators, default=default)
+class Required(Option):
+    def __init__(self, validators):
+        super(Required, self).__init__(validators, required=True)
 
 
 # Default values
@@ -17,26 +28,23 @@ def define(validators, default):
 DEFAULT_USER_AGENT = 'crawlster Python3'
 
 
-# Exceptions
-
-class ConfigurationError(Exception):
-    """Thrown when configuration is invalid"""
-
-
-class OptionNotDefinedError(Exception):
-    """Thrown when trying to access an option that is not defined"""
-
-
 # Core
 
 class Configuration(object):
     """Configuration object that stores key-value pairs of options"""
 
     defined_options = {
-        'http.user_agent': define(validators=[validate_isinstance(str)],
+        'http.user_agent': Option(validators=[validate_isinstance(str)],
                                   default=DEFAULT_USER_AGENT),
-        'helpers.imports': define(
-            validators=[validate_isinstance(list)], default=[])
+        'pool.workers': Option(validators=[validate_isinstance(int)],
+                               default=os.cpu_count()),
+
+        'log.level': Option(
+            [one_of('debug', 'info', 'warning', 'error', 'critical')],
+            default='info'),
+
+        'core.start_step': Required([validate_isinstance(str)]),
+        'core.start_urls': Required([validate_isinstance(list)])
     }
 
     def __init__(self, options):
@@ -57,7 +65,7 @@ class Configuration(object):
         Returns a mapping of option name - list of errors
         """
         errors = {}
-        for option_key in self.options:
+        for option_key in self.defined_options:
             op_errors = self.validate_single_option(option_key)
             if op_errors:
                 errors[option_key] = op_errors
@@ -102,4 +110,7 @@ class Configuration(object):
         option_spec = self.defined_options.get(key)
         if not option_spec:
             raise OptionNotDefinedError(key)
+        if key not in self.options and option_spec.required:
+            raise MissingValueError(
+                '{} is required but not provided'.format(key))
         return self.options.get(key, option_spec.default)

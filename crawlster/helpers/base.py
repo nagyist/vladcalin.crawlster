@@ -5,6 +5,9 @@ class BaseHelper(object):
     def __init__(self):
         self.config = None
 
-    def set_config(self, configuration):
-        """Injects the current configuration into the helpers"""
-        self.config = configuration
+    def initialize(self):
+        """Perform initial configuration
+
+        Called right after self.config is populated.
+        """
+        pass

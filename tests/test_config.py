@@ -1,7 +1,7 @@
 import pytest
 
-from crawlster.config import Configuration, define, ConfigurationError, \
-    OptionNotDefinedError
+from crawlster.config import Configuration, ConfigurationError, \
+    OptionNotDefinedError, Option
 from crawlster.validators import validate_isinstance, validate_required, \
     ValidationError
 
@@ -9,7 +9,7 @@ from crawlster.validators import validate_isinstance, validate_required, \
 def test_config_validate_single_option():
     old_defined = Configuration.defined_options
     Configuration.defined_options = {
-        'test': define(validators=[validate_isinstance(int)], default=None)
+        'test': Option(validators=[validate_isinstance(int)], default=None)
     }
     config = Configuration({'test': 10})
     assert config.get('test') == 10
@@ -47,7 +47,7 @@ def test_validators_is_instance():
 def test_config_accessing_wrong_option():
     old_defined = Configuration.defined_options
     Configuration.defined_options = {
-        'test': define(validators=[validate_isinstance(int)], default=None)
+        'test': Option(validators=[validate_isinstance(int)], default=None)
     }
     config = Configuration({'test': 10})
     with pytest.raises(OptionNotDefinedError):
