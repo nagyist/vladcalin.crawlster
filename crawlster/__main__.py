@@ -71,8 +71,9 @@ def run_parser_from_source(source):
     module_name = os.path.split(source)[-1].split(".")[0]
 
     # load the module
-    specs = importlib.util.spec_from_file_location("loaded_crawler.{}".format(module_name),
-                                                   source)
+    specs = importlib.util.spec_from_file_location(
+        "loaded_crawler.{}".format(module_name),
+        source)
     module = importlib.util.module_from_spec(specs)
     specs.loader.exec_module(module)
 
@@ -87,7 +88,8 @@ def run_parser_from_source(source):
             crawlers.append(item)
 
     if not crawlers:
-        print(colorama.Fore.RED + "Couldn't find any crawlers in {}".format(source))
+        print(colorama.Fore.RED + "Couldn't find any crawlers in {}".format(
+            source))
         sys.exit(-1)
 
     for crawler in crawlers:
@@ -96,20 +98,26 @@ def run_parser_from_source(source):
 
 
 def make_new_parser_subparser(subparsers):
-    subparser_newparser = subparsers.add_parser("newparser", help="Create a new parser",
-                                                description="Crate a new parser")
+    subparser_newparser = subparsers.add_parser(
+        "newparser",
+        help="Create a new parser",
+        description="Crate a new parser")
     subparser_newparser.add_argument("name", help="The name of the parser")
     subparser_newparser.add_argument("--author", default="")
 
 
 def make_run_parser_subparser(subparsers):
-    subparser_run = subparsers.add_parser("run", help="Runs a crawler from a file")
+    subparser_run = subparsers.add_parser("run",
+                                          help="Runs a crawler from a file")
 
-    subparser_run.add_argument("source", help="The source file that contains the crawler")
+    subparser_run.add_argument(
+        "source",
+        help="The source file that contains the crawler")
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="crawlster", description="Crawlster utilities")
+    parser = argparse.ArgumentParser(prog="crawlster",
+                                     description="Crawlster utilities")
 
     subparsers = parser.add_subparsers(dest="action")
 

@@ -20,14 +20,16 @@ class Crawlster(object):
     worker_threads = os.cpu_count()
     result_handlers = []
 
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " \
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
+                 "AppleWebKit/537.36 " \
                  "(KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
     logger = DEFAULT_LOGGER
 
     def __init__(self):
         self.queue = queue.Queue()
-        self.worker_is_busy = [threading.Event() for _ in range(self.worker_threads)]
+        self.worker_is_busy = [threading.Event() for _ in
+                               range(self.worker_threads)]
         self.worker_pool = self.get_worker_pool()
         self._regex_cache = {}
 
@@ -116,7 +118,8 @@ class Crawlster(object):
     def get_worker_pool(self):
         return [
             threading.Thread(target=self.worker_main,
-                             kwargs={"job_queue": self.queue}) for _ in range(self.worker_threads)]
+                             kwargs={"job_queue": self.queue}) for _ in
+            range(self.worker_threads)]
 
     def start_workers(self):
         self.logger.debug("Starting workers")
@@ -129,7 +132,8 @@ class Crawlster(object):
             self.schedule(getattr(self, handler_name), url)
 
     def worker_main(self, job_queue):
-        self.logger.debug("Started worker with TID={}".format(threading.get_ident()))
+        self.logger.debug(
+            "Started worker with TID={}".format(threading.get_ident()))
         while True:
 
             try:
@@ -137,7 +141,9 @@ class Crawlster(object):
             except queue.Empty:
                 continue
 
-            self.logger.info("Processing {} with {} and {}".format(func.__name__, args, kwargs))
+            self.logger.info(
+                "Processing {} with {} and {}".format(func.__name__, args,
+                                                      kwargs))
             try:
                 self.process_job(func, args, kwargs)
             except Exception as e:

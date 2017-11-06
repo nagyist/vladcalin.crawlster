@@ -13,5 +13,9 @@ setup(
         "beautifulsoup4",
         "colorlog",
         "cronex"
-    ]
+    ],
+    test_require=[
+        'pytest'
+    ],
+    test_suite='pytest'
 )

@@ -14,7 +14,8 @@ class RunRule(abc.ABC):
 
 class PeriodicRun(RunRule):
     def __init__(self, days=None, hours=None, minutes=None, seconds=None):
-        self.interval = datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+        self.interval = datetime.timedelta(days=days, hours=hours,
+                                           minutes=minutes, seconds=seconds)
 
     def should_run(self, last_run):
         if not last_run:
@@ -34,13 +35,15 @@ class CrontabRule(RunRule):
 def run_crawler(crawler_class):
     crawler_class().start()
 
+
 class CrawlsterDaemon(object):
     def __init__(self, processes=1):
         self._crawlers = []
         self.pool = multiprocessing.Pool(processes=processes)
 
     def add_crawler(self, crawler_class, rule):
-        self._crawlers.append([rule, crawler_class, None])  # rule, crawler_class, last_run
+        self._crawlers.append(
+            [rule, crawler_class, None])  # rule, crawler_class, last_run
 
     def _run_crawler(self, crawler_class):
         print("Running {}".format(crawler_class.__name__))
