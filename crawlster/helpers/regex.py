@@ -27,3 +27,12 @@ class RegexHelper(BaseHelper):
     def make_cache_key(pattern, flags):
         """Creates a unique cache key for every pattern"""
         return '{}_{}'.format(pattern, flags)
+
+    def search(self, pattern, text, flags=0):
+        return self.compile(pattern, flags).search(text)
+
+    def findall(self, pattern, text, flags=0):
+        return self.compile(pattern, flags).findall(text)
+
+    def match(self, pattern, text, flags=0):
+        return self.compile(pattern, flags).match(text)

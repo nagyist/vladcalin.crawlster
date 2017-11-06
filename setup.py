@@ -17,5 +17,10 @@ setup(
     test_require=[
         'pytest'
     ],
-    test_suite='pytest'
+    test_suite='pytest',
+    extras_require={
+        'advanced': [
+            'lxml'
+        ]
+    }
 )

@@ -22,9 +22,15 @@ class UrlsHelper(BaseHelper):
             res = urllib.parse.urljoin(res, part)
         return res
 
+    def join_paths(self, base, paths):
+        return [self.join(base, path) for path in paths]
+
     def get_hostname(self, url):
-        """Returns the hostname of the url."""
+        """Returns only the hostname of the url (domain and subdomains)."""
         return urllib.parse.urlparse(url).netloc
+
+    def get_base(self, url):
+        return self.join(url, '/')
 
     def get_path(self, url):
         """Returns the URL path for the url"""

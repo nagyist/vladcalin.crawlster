@@ -3,7 +3,8 @@ import threading
 
 import time
 
-from crawlster.config import Configuration, ConfigurationError
+from crawlster.config import ConfigurationError
+from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
 from crawlster.exceptions import get_full_error_msg
@@ -40,9 +41,11 @@ class Crawlster(object):
     urls = UrlsHelper()
     regex = RegexHelper()
     log = LoggingHelper()
-    requests = RequestsHelper()
+    http = RequestsHelper()
+    extract = ExtractHelper()
 
     def __init__(self):
+        """Initializes the crawler"""
         if self.config is None:
             raise ConfigurationError(get_full_error_msg('missing_config'))
 
@@ -63,15 +66,18 @@ class Crawlster(object):
                 attr_obj.initialize()
 
     def init_context(self):
+        """Initializes the crawler context (the queue and the worker pool)"""
         # prepare queue
         self.queue = self.get_queue()
         self.pool = self.get_pool()
 
     def get_queue(self):
+        """Creates and returns the job queue"""
         self.log.debug('Creating the task queue')
         return queue.Queue()
 
     def get_pool(self):
+        """Creates and returns the worker pool"""
         workers = self.config.get('pool.workers')
         pool = []
         for _ in range(workers):
@@ -79,6 +85,7 @@ class Crawlster(object):
         return pool
 
     def start(self):
+        """Starts crawling based on the config"""
         start_func_name = self.config.get('core.start_step')
         func = getattr(self, start_func_name, None)
         if not func:
@@ -98,6 +105,7 @@ class Crawlster(object):
             self.queue.put(Job(Job.TYPE_EXIT, None, None, None))
 
     def worker(self):
+        """Worker body that executes the jobs"""
         work_queue = self.queue
         while True:
             try:
@@ -116,6 +124,7 @@ class Crawlster(object):
             work_queue.task_done()
 
     def process_job(self, job):
+        """Processes a single job and enqueues the results"""
         self.log.debug('Processing job: {}'.format(job))
         next_item = job.func(*job.args, **job.kwargs)
         if not next_item:
@@ -123,4 +132,9 @@ class Crawlster(object):
         self.queue.put(self.make_job_from_item(next_item))
 
     def make_job_from_item(self, next_item):
+        """Wraps returned item from job into a Job object"""
         return Job(Job.TYPE_FUNC, next_item[0], next_item[1], next_item[2])
+
+    def schedule(self, func, *args, **kwargs):
+        job = self.make_job_from_item((func, args, kwargs))
+        self.queue.put(job)
