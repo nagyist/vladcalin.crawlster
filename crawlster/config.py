@@ -67,7 +67,6 @@ LOG_OPTIONS = {
 }
 
 
-
 # Core
 
 class Configuration(object):
@@ -125,7 +124,7 @@ class Configuration(object):
                 errors.append(str(e))
         return errors
 
-    def get(self, key):
+    def get(self, key, raise_if_not_defined=True):
         """Retrieves the value of the specified option
 
         The returned value is the one passed in the config initialization or
@@ -134,14 +133,22 @@ class Configuration(object):
         Args:
             key (str):
                 The key of the option for which the value must be returned
+            raise_if_not_defined (bool):
+                Whether to raise an exception if the required option is not
+                defined. If False and the option is not defined, None is
+                returned.
 
         Raises:
             OptionNotDefinedError:
-                When the specified key is not defined.
+                When the specified key is not defined and raise_if_not_defined
+                is True
         """
         option_spec = self.defined_options.get(key)
         if not option_spec:
-            raise OptionNotDefinedError(key)
+            if raise_if_not_defined:
+                raise OptionNotDefinedError(key)
+            else:
+                return
         if key not in self.options and option_spec.required:
             raise MissingValueError(
                 '{} is required but not provided'.format(key))
