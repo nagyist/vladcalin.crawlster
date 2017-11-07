@@ -6,14 +6,15 @@
 Welcome to crawlster's documentation!
 =====================================
 
+.. include:: ../../readme.rst
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   intro
-   crawler
-   daemon
+   tutorial
 
+.. include:: ../../changelog.rst
 
 
 Indices and tables

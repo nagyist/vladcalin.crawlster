@@ -28,28 +28,56 @@ class Required(Option):
 DEFAULT_USER_AGENT = 'crawlster Python3'
 
 
+# Options
+
+
+def merge_dicts(*dicts):
+    res = {}
+    for d in dicts:
+        res.update(d)
+    return res
+
+
+HTTP_OPTIONS = {
+    'http.user_agent': Option(validators=[validate_isinstance(str)],
+                              default=DEFAULT_USER_AGENT),
+}
+
+CORE_OPTIONS = {
+    'core.start_step': Required([validate_isinstance(str)]),
+    'core.start_urls': Required([validate_isinstance(list)]),
+}
+
+URLS_OPTIONS = {
+    'urls.allowed_domains': Option([validate_isinstance(list)],
+                                   default=[]),
+    'urls.forbidden_domains': Option([validate_isinstance(list)],
+                                     default=[]),
+}
+
+POOL_OPTIONS = {
+    'pool.workers': Option(validators=[validate_isinstance(int)],
+                           default=os.cpu_count()),
+}
+
+LOG_OPTIONS = {
+    'log.level': Option(
+        [one_of('debug', 'info', 'warning', 'error', 'critical')],
+        default='info'),
+}
+
+
+
 # Core
 
 class Configuration(object):
     """Configuration object that stores key-value pairs of options"""
 
-    defined_options = {
-        'http.user_agent': Option(validators=[validate_isinstance(str)],
-                                  default=DEFAULT_USER_AGENT),
-        'pool.workers': Option(validators=[validate_isinstance(int)],
-                               default=os.cpu_count()),
-
-        'log.level': Option(
-            [one_of('debug', 'info', 'warning', 'error', 'critical')],
-            default='info'),
-
-        'core.start_step': Required([validate_isinstance(str)]),
-        'core.start_urls': Required([validate_isinstance(list)]),
-        'urls.allowed_domains': Option([validate_isinstance(list)],
-                                       default=[]),
-        'urls.forbidden_domains': Option([validate_isinstance(list)],
-                                         default=[]),
-    }
+    defined_options = merge_dicts(HTTP_OPTIONS,
+                                  CORE_OPTIONS,
+                                  URLS_OPTIONS,
+                                  POOL_OPTIONS,
+                                  LOG_OPTIONS)
 
     def __init__(self, options):
         """Initializes the values of the configuration object

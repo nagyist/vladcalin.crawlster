@@ -17,6 +17,7 @@ class RequestsHelper(BaseHelper):
         self.auth = requests.auth.HTTPBasicAuth(username, password)
 
     def initialize(self):
+        """Initializes the session used for making requests"""
         self.session = requests.session()
 
     def make_request(self, *args, **kwargs):
@@ -25,8 +26,14 @@ class RequestsHelper(BaseHelper):
         See more:
             http://docs.python-requests.org/en/master/api/#requests.request
         """
+        self.crawler.stats.incr(self.crawler.STAT_REQUESTS)
         try:
-            return self.session.request(*args, **kwargs)
+            resp = self.session.request(*args, **kwargs)
+            self.crawler.stats.incr(self.crawler.STAT_DOWNLOAD,
+                                    by=self._compute_resp_size(resp))
+            self.crawler.stats.incr(self.crawler.STAT_UPLOAD,
+                                    by=self._compute_req_size(resp.request))
+            return resp
         except requests.exceptions.RequestException as e:
             self.crawler.log.error(str(e))
 
@@ -49,3 +56,9 @@ class RequestsHelper(BaseHelper):
     def options(self, *args, **kwargs):
         """Makes an OPTIONS request"""
         return self.make_request('options', *args, **kwargs)
+
+    def _compute_resp_size(self, response):
+        return len(response.content)
+
+    def _compute_req_size(self, request):
+        return len(request.body or '')

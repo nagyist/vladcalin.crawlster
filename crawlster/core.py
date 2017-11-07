@@ -1,3 +1,4 @@
+import datetime
 import queue
 import threading
 
@@ -10,6 +11,7 @@ from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
 from crawlster.exceptions import get_full_error_msg
 from crawlster.helpers.request import RequestsHelper
+from crawlster.helpers.stats import StatsHelper
 
 
 class Job(object):
@@ -32,20 +34,42 @@ class Job(object):
 
 
 class Crawlster(object):
-    HELPER_FLAG = 'is_helper'
+    """Base class for web crawlers
 
+    Any crawler must subclass this and provide a valid Configuration object
+    as the config class attribute.
+
+    """
+    # constants
+    HELPER_FLAG = 'is_helper'
+    # stats
+    STAT_ITEMS = 'items'
+    STAT_REQUESTS = 'http.requests'
+    STAT_DOWNLOAD = 'http.download'
+    STAT_UPLOAD = 'http.upload'
+    STAT_ERRORS = 'errors'
+    STAT_START_TIME = 'time.start'
+    STAT_FINISH_TIME = 'time.finish'
+    STAT_DURATION = 'time.duration'
+
+    # the configuration object
     config = None
 
     # Helpers
+    # =======
     # we directly attach them because we want the nice auto complete
     # features of IDEs
-    urls = UrlsHelper()
-    regex = RegexHelper()
+
+    # Core helpers. They must always be provided
+    stats = StatsHelper()
     log = LoggingHelper()
     http = RequestsHelper()
+    # Various utility helpers
+    urls = UrlsHelper()
+    regex = RegexHelper()
     extract = ExtractHelper()
 
-    # Item handler
+    # a single item handler or a list/tuple of them
     item_handler = StreamItemHandler()
 
     def __init__(self):
@@ -103,6 +127,7 @@ class Crawlster(object):
     def start(self):
         """Starts crawling based on the config"""
         start_func_name = self.config.get('core.start_step')
+        self.stats.set(self.STAT_START_TIME, datetime.datetime.now())
         func = getattr(self, start_func_name, None)
         if not func:
             raise ConfigurationError(
@@ -119,6 +144,12 @@ class Crawlster(object):
         self.log.debug('Signaling workers to stop')
         for _ in range(len(self.pool)):
             self.queue.put(Job(Job.TYPE_EXIT, None, None, None))
+        # updating stats
+        finish = datetime.datetime.now()
+        self.stats.set(self.STAT_FINISH_TIME, finish)
+        start = self.stats.get(self.STAT_START_TIME)
+        duration = (finish - start).total_seconds()
+        self.stats.set(self.STAT_DURATION, duration)
 
     def worker(self):
         """Worker body that executes the jobs"""
@@ -142,7 +173,17 @@ class Crawlster(object):
     def process_job(self, job):
         """Processes a single job and enqueues the results"""
         self.log.debug('Processing job: {}'.format(job))
-        next_item = job.func(*job.args, **job.kwargs)
+        try:
+            next_item = job.func(*job.args, **job.kwargs)
+        except Exception as e:
+            self.log.error(str(e))
+            self.stats.add(self.STAT_ERRORS, {
+                'func': job.func.__name__,
+                'args': job.args,
+                'kwargs': job.kwargs,
+                'exception': e
+            })
+            return
         if not next_item:
             return
         if isinstance(next_item, dict):
@@ -165,7 +206,14 @@ class Crawlster(object):
         self.queue.put(job)
 
     def submit_item(self, item):
+        """Submit an item to be handled by the item handlers
+
+        Args:
+            item (dict):
+                The item that has to be processed
+        """
         self.log.debug('Submitted item {}'.format(item))
+        self.stats.incr(self.STAT_ITEMS)
         if isinstance(self.item_handler, (list, tuple)):
             for handler in self.item_handler:
                 handler.handle(item)

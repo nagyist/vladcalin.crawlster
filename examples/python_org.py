@@ -1,3 +1,5 @@
+import pprint
+
 from crawlster.core import Crawlster
 from crawlster.config import Configuration
 from crawlster.handlers.log_handler import LogItemHandler
@@ -28,6 +30,8 @@ class PythonOrgCrawler(Crawlster):
                 self.schedule(self.process_download, link)
 
     def process_download(self, link):
+        if link.endswith('.exe'):
+            raise ValueError('Invalid extension')
         return {
             'url': link,
             'type': link.split('.')[-1]
@@ -35,4 +39,6 @@ class PythonOrgCrawler(Crawlster):
 
 
 if __name__ == '__main__':
-    PythonOrgCrawler().start()
+    crawler = PythonOrgCrawler()
+    crawler.start()
+    pprint.pprint(crawler.stats.dump())
