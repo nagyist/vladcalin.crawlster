@@ -45,7 +45,8 @@ class Configuration(object):
 
         'core.start_step': Required([validate_isinstance(str)]),
         'core.start_urls': Required([validate_isinstance(list)]),
-        'urls.allowed_domains': Option([validate_isinstance(list)], default=[]),
+        'urls.allowed_domains': Option([validate_isinstance(list)],
+                                       default=[]),
         'urls.forbidden_domains': Option([validate_isinstance(list)],
                                          default=[]),
     }

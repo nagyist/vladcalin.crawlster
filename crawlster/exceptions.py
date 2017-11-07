@@ -15,7 +15,7 @@ class MissingValueError(CrawlsterError):
     """Thrown when a required config value is not provided"""
 
 
-missing_config_msg = """The configuration is not properly initialized. 
+missing_config_msg = """The configuration is not properly initialized.
 It seems you forgot to declare the config attribute for the crawler?
 """
 
