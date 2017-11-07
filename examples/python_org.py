@@ -6,10 +6,13 @@ from crawlster.handlers.log_handler import LogItemHandler
 
 
 class PythonOrgCrawler(Crawlster):
+    """
+    This is an example crawler used to crawl info about all the Python modules
+    """
     config = Configuration({
         'core.start_step': 'step_start',
         'core.start_urls': [
-            'https://www.python.org/downloads/'],
+            'https://docs.python.org/3/library/index.html'],
         'log.level': 'debug',
         'pool.workers': 3
     })
@@ -25,17 +28,20 @@ class PythonOrgCrawler(Crawlster):
         base = self.urls.get_base(url)
         full_links = self.urls.join_paths(base, hrefs)
         for link in full_links:
-            if self.urls.has_extension(link, (
-                    'exe', 'tar.gz', 'tgz', 'tar.xz', 'pkg', 'chm', 'zip',)):
-                self.schedule(self.process_download, link)
+            if '#' in link:
+                continue
+            self.schedule(self.process_page, link)
 
-    def process_download(self, link):
-        if link.endswith('.exe'):
-            raise ValueError('Invalid extension')
-        return {
-            'url': link,
-            'type': link.split('.')[-1]
-        }
+    def process_page(self, url):
+        resp = self.http.get(url)
+        if not self.looks_like_module_page(resp.content):
+            return
+        module_name = self.extract.css(resp.content,
+                                       'h1 a.reference.internal code span')
+        return {'name': module_name.text}
+
+    def looks_like_module_page(self, page_content):
+        return b'Source code:' in page_content
 
 
 if __name__ == '__main__':
