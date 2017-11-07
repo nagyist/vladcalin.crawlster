@@ -4,10 +4,11 @@ class BaseHelper(object):
 
     def __init__(self):
         self.config = None
+        self.crawler = None
 
     def initialize(self):
         """Perform initial configuration
 
-        Called right after self.config is populated.
+        Called right after self.config and self.crawler is populated.
         """
         pass

@@ -30,7 +30,7 @@ class ExtractHelper(BaseHelper):
         """
         items = BeautifulSoup(text, 'html.parser').select(selector)
         if attr:
-            return [i[attr] for i in items]
+            return [i[attr] for i in items if attr in i.attrs]
         else:
             return [str(i) for i in items]
 

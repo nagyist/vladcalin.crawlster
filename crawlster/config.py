@@ -44,7 +44,10 @@ class Configuration(object):
             default='info'),
 
         'core.start_step': Required([validate_isinstance(str)]),
-        'core.start_urls': Required([validate_isinstance(list)])
+        'core.start_urls': Required([validate_isinstance(list)]),
+        'urls.allowed_domains': Option([validate_isinstance(list)], default=[]),
+        'urls.forbidden_domains': Option([validate_isinstance(list)],
+                                         default=[]),
     }
 
     def __init__(self, options):

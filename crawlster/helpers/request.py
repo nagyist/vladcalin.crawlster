@@ -1,5 +1,6 @@
 import requests
 import requests.auth
+import requests.exceptions
 
 from crawlster.helpers.base import BaseHelper
 
@@ -24,4 +25,27 @@ class RequestsHelper(BaseHelper):
         See more:
             http://docs.python-requests.org/en/master/api/#requests.request
         """
-        return self.session.request(*args, **kwargs)
+        try:
+            return self.session.request(*args, **kwargs)
+        except requests.exceptions.RequestException as e:
+            self.crawler.log.error(str(e))
+
+    def get(self, *args, **kwargs):
+        """Makes a GET request"""
+        return self.make_request('get', *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        """Makes a POST request"""
+        return self.make_request('post', *args, **kwargs)
+
+    def patch(self, *args, **kwargs):
+        """Makes a PATCH request"""
+        return self.make_request('patch', *args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Makes a DELETE request"""
+        return self.make_request('delete', *args, **kwargs)
+
+    def options(self, *args, **kwargs):
+        """Makes an OPTIONS request"""
+        return self.make_request('options', *args, **kwargs)

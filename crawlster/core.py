@@ -4,6 +4,7 @@ import threading
 import time
 
 from crawlster.config import ConfigurationError
+from crawlster.handlers.stream import StreamItemHandler
 from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
@@ -44,6 +45,9 @@ class Crawlster(object):
     http = RequestsHelper()
     extract = ExtractHelper()
 
+    # Item handler
+    item_handler = StreamItemHandler()
+
     def __init__(self):
         """Initializes the crawler"""
         if self.config is None:
@@ -51,19 +55,31 @@ class Crawlster(object):
 
         self.queue = None
         self.pool = None
-        self.inject_config_into_helpers()
+        self.inject_helpers()
+        self.inject_handlers()
         self.log.info('Initializing context')
         self.init_context()
         self.log.info('Context initialized')
 
-    def inject_config_into_helpers(self):
+    def inject_helpers(self):
         """Injects the current config into all helpers"""
         for attrname in dir(self):
             attr_obj = getattr(self, attrname)
             if hasattr(attr_obj, self.HELPER_FLAG) and \
                     getattr(attr_obj, self.HELPER_FLAG):
-                attr_obj.config = self.config
-                attr_obj.initialize()
+                self.inject_config_and_crawler(attr_obj)
+
+    def inject_handlers(self):
+        if isinstance(self.item_handler, (list, tuple)):
+            for handler in self.item_handler:
+                self.inject_config_and_crawler(handler)
+        else:
+            self.inject_config_and_crawler(self.item_handler)
+
+    def inject_config_and_crawler(self, to_be_injected):
+        to_be_injected.config = self.config
+        to_be_injected.crawler = self
+        to_be_injected.initialize()
 
     def init_context(self):
         """Initializes the crawler context (the queue and the worker pool)"""
@@ -129,12 +145,29 @@ class Crawlster(object):
         next_item = job.func(*job.args, **job.kwargs)
         if not next_item:
             return
-        self.queue.put(self.make_job_from_item(next_item))
+        if isinstance(next_item, dict):
+            # is an item/result
+            self.submit_item(next_item)
+        elif isinstance(next_item, Job):
+            # is a job instance, must be further processes
+            self.queue.put(next_item)
+        elif isinstance(next_item, tuple):
+            # is a tuple of callable, args, kwargs
+            self.queue.put(self.make_job_from_item(next_item))
 
     def make_job_from_item(self, next_item):
         """Wraps returned item from job into a Job object"""
         return Job(Job.TYPE_FUNC, next_item[0], next_item[1], next_item[2])
 
     def schedule(self, func, *args, **kwargs):
+        """Schedules the next tep to be executed by workers"""
         job = self.make_job_from_item((func, args, kwargs))
         self.queue.put(job)
+
+    def submit_item(self, item):
+        self.log.debug('Submitted item {}'.format(item))
+        if isinstance(self.item_handler, (list, tuple)):
+            for handler in self.item_handler:
+                handler.handle(item)
+        else:
+            self.item_handler.handle(item)
