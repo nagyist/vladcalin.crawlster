@@ -124,7 +124,7 @@ class Configuration(object):
                 errors.append(str(e))
         return errors
 
-    def get(self, key, raise_if_not_defined=True):
+    def get(self, key, *, raise_if_not_defined=True):
         """Retrieves the value of the specified option
 
         The returned value is the one passed in the config initialization or
