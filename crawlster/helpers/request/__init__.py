@@ -23,7 +23,7 @@ class RequestsHelper(BaseHelper):
         self.session = requests.session()
 
     def make_request(self, url, method='get', query_params=None, data=None,
-                     headers=None):
+                     headers=None, *args, **kwargs):
         """Wrapper over request.Session.request
 
         See more:
@@ -33,7 +33,7 @@ class RequestsHelper(BaseHelper):
 
         try:
             resp = self.session.request(method, url, query_params, data,
-                                        headers)
+                                        headers, *args, **kwargs)
             self.crawler.stats.incr(self.STAT_DOWNLOAD,
                                     by=self._compute_resp_size(resp))
             self.crawler.stats.incr(self.STAT_UPLOAD,

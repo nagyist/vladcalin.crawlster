@@ -39,3 +39,7 @@ class ExtractHelper(BaseHelper):
             raise RuntimeError('lxml in required to use xpath')
         from lxml import html
         return html.fromstring(text).xpath(selector)
+
+    def parse_bs4(self, text):
+        """Parses data using BeautifulSoup4"""
+        return BeautifulSoup(text, 'html.parser')

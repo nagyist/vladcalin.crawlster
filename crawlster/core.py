@@ -84,15 +84,17 @@ class Crawlster(object):
         self.log.info('Context initialized')
 
     def inject_helpers(self):
-        """Injects the current config into all helpers"""
+        """Injects and initializes all the known helpers"""
         for helper in self.iter_helpers():
             self.inject_config_and_crawler(helper)
 
     def inject_handlers(self):
+        """Injects and initializes all the known item handlers"""
         for handler in self.iter_item_handlers():
             self.inject_config_and_crawler(handler)
 
     def iter_helpers(self):
+        """Iterates through all the item handlers"""
         for attrname in dir(self):
             attr_obj = getattr(self, attrname)
             if hasattr(attr_obj, self.HELPER_FLAG) and \
@@ -100,6 +102,7 @@ class Crawlster(object):
                 yield attr_obj
 
     def iter_item_handlers(self):
+        """Iterates through all the known item handlers"""
         if isinstance(self.item_handler, (list, tuple)):
             for handler in self.item_handler:
                 yield handler
@@ -107,6 +110,18 @@ class Crawlster(object):
             yield self.item_handler
 
     def inject_config_and_crawler(self, to_be_injected):
+        """Injects the config instance and crawler instance into the object
+
+        The crawler instance will be accessible through the .crawler attribute,
+        the config instance will be accessible through the .config attribute.
+        After injection, the .initialize() is called to perform the init
+        actions.
+
+        Args:
+            to_be_injected (object which has initialize()):
+                An object in which will be injected the config and crawler
+                attributes. Must have an .initialize() method
+        """
         to_be_injected.config = self.config
         to_be_injected.crawler = self
         to_be_injected.initialize()
@@ -222,6 +237,7 @@ class Crawlster(object):
             self.item_handler.handle(item)
 
     def finalize(self):
+        """Performs the finalize action on all item handlers and helpers"""
         for handler in self.iter_item_handlers():
             handler.finalize()
         for helper in self.iter_helpers():
