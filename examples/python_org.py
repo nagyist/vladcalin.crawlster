@@ -42,9 +42,10 @@ class PythonOrgCrawler(Crawlster):
         if not self.looks_like_module_page(resp.content):
             return
         module_name = self.extract.css(resp.content,
-                                       'h1 a.reference.internal code span')
+                                       'h1 a.reference.internal code span',
+                                       content=True)
         for res in module_name:
-            self.submit_item({'name': res.text, 'url': url})
+            self.submit_item({'name': res, 'url': url})
 
     def looks_like_module_page(self, page_content):
         return b'Source code:' in page_content

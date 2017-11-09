@@ -1,6 +1,4 @@
 import os
-from collections import namedtuple
-import secrets
 
 from .validators import ValidationError, validate_isinstance, one_of
 from .exceptions import ConfigurationError, OptionNotDefinedError, \
@@ -10,16 +8,54 @@ from .exceptions import ConfigurationError, OptionNotDefinedError, \
 # Option specs
 
 
-class Option(object):
+class ConfigOption(object):
     def __init__(self, validators, default=None, required=False):
         self.validators = validators
         self.default = default
         self.required = required
 
+    def get_default_value(self):
+        if callable(self.default):
+            return self.default()
+        else:
+            return self.default
 
-class Required(Option):
+
+Optional = ConfigOption
+
+
+class Required(ConfigOption):
     def __init__(self, validators):
         super(Required, self).__init__(validators, required=True)
+
+
+class OptionWithDefaultValidators(ConfigOption):
+    default_validators = []
+
+    def __init__(self, default=None, required=False, extra_validators=None):
+        validators = self.default_validators + (extra_validators or [])
+        super(OptionWithDefaultValidators, self).__init__(validators,
+                                                          default,
+                                                          required)
+
+
+class NumberOption(OptionWithDefaultValidators):
+    default_validators = [validate_isinstance(int)]
+
+
+class StringOption(OptionWithDefaultValidators):
+    default_validators = [validate_isinstance(int)]
+
+
+class ListOption(OptionWithDefaultValidators):
+    default_validators = [validate_isinstance((list, tuple))]
+
+
+class ChoiceOption(ConfigOption):
+    def __init__(self, choices, default=None, required=False,
+                 extra_validators=None):
+        validators = [one_of(choices)] + (extra_validators or [])
+        super(ChoiceOption, self).__init__(validators, default, required)
 
 
 # Default values
@@ -27,43 +63,13 @@ class Required(Option):
 
 DEFAULT_USER_AGENT = 'crawlster Python3'
 
-
 # Options
 
 
-def merge_dicts(*dicts):
-    res = {}
-    for d in dicts:
-        res.update(d)
-    return res
-
-
-HTTP_OPTIONS = {
-    'http.user_agent': Option(validators=[validate_isinstance(str)],
-                              default=DEFAULT_USER_AGENT),
-}
-
 CORE_OPTIONS = {
-    'core.start_step': Required([validate_isinstance(str)]),
-    'core.start_urls': Required([validate_isinstance(list)]),
-}
-
-URLS_OPTIONS = {
-    'urls.allowed_domains': Option([validate_isinstance(list)],
-                                   default=[]),
-    'urls.forbidden_domains': Option([validate_isinstance(list)],
-                                     default=[]),
-}
-
-POOL_OPTIONS = {
-    'pool.workers': Option(validators=[validate_isinstance(int)],
-                           default=os.cpu_count()),
-}
-
-LOG_OPTIONS = {
-    'log.level': Option(
-        [one_of('debug', 'info', 'warning', 'error', 'critical')],
-        default='info'),
+    'core.start_step': StringOption(required=True),
+    'core.start_urls': ListOption(required=True),
+    'core.workers': NumberOption(default=os.cpu_count())
 }
 
 
@@ -72,12 +78,6 @@ LOG_OPTIONS = {
 class Configuration(object):
     """Configuration object that stores key-value pairs of options"""
 
-    defined_options = merge_dicts(HTTP_OPTIONS,
-                                  CORE_OPTIONS,
-                                  URLS_OPTIONS,
-                                  POOL_OPTIONS,
-                                  LOG_OPTIONS)
-
     def __init__(self, options):
         """Initializes the values of the configuration object
 
@@ -85,10 +85,12 @@ class Configuration(object):
             options (dict):
                 the values of the configuration object
         """
-        self.options = options
-        errors = self.validate_options()
-        if errors:
-            raise ConfigurationError(errors)
+        self.provided_options = options
+        self.defined_options = CORE_OPTIONS
+
+    def register_options(self, options_dict):
+        print(options_dict)
+        self.defined_options.update(options_dict)
 
     def validate_options(self):
         """Validates the options.
@@ -100,7 +102,8 @@ class Configuration(object):
             op_errors = self.validate_single_option(option_key)
             if op_errors:
                 errors[option_key] = op_errors
-        return errors
+        if errors:
+            raise Configuration(errors)
 
     def validate_single_option(self, option_name):
         """Validates a single option given its name
@@ -149,7 +152,7 @@ class Configuration(object):
                 raise OptionNotDefinedError(key)
             else:
                 return
-        if key not in self.options and option_spec.required:
+        if key not in self.provided_options and option_spec.required:
             raise MissingValueError(
                 '{} is required but not provided'.format(key))
-        return self.options.get(key, option_spec.default)
+        return self.provided_options.get(key, option_spec.get_default_value())

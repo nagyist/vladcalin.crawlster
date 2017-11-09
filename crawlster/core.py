@@ -77,6 +77,7 @@ class Crawlster(object):
             raise ConfigurationError(get_full_error_msg('missing_config'))
 
         self.pool = None
+        self.populate_config()
         self.inject_helpers()
         self.inject_handlers()
         self.log.info('Initializing context')
@@ -133,7 +134,7 @@ class Crawlster(object):
 
     def get_pool(self):
         """Creates and returns the worker pool"""
-        workers = self.config.get('pool.workers')
+        workers = self.config.get('core.workers')
         pool = []
         for _ in range(workers):
             pool.append(threading.Thread(target=self.worker))
@@ -242,3 +243,9 @@ class Crawlster(object):
             handler.finalize()
         for helper in self.iter_helpers():
             helper.finalize()
+
+    def populate_config(self):
+        for helper in self.iter_helpers():
+            self.config.register_options(helper.config_options)
+        for handler in self.iter_item_handlers():
+            self.config.register_options(handler.config_options)

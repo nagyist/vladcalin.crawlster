@@ -1,4 +1,6 @@
 class BaseItemHandler(object):
+    config_options = {}
+
     def __init__(self):
         self.crawler = None
         self.config = None

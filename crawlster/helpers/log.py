@@ -3,11 +3,16 @@ import logging
 import colorlog
 import sys
 
+from crawlster.config import ChoiceOption
 from crawlster.helpers.base import BaseHelper
 
 
 class LoggingHelper(BaseHelper):
     name = 'log'
+    valid_log_levels = ('debug', 'info', 'warning', 'error', 'critical')
+    config_options = {
+        'log.level': ChoiceOption(valid_log_levels, default='info')
+    }
 
     DEFAULT_FORMAT = "%(log_color)s%(levelname)s - %(name)s - %(message)s"
 

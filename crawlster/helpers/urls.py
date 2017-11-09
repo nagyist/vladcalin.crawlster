@@ -1,11 +1,16 @@
 import urllib.parse
 
+from crawlster.config import ListOption
 from crawlster.helpers.base import BaseHelper
 
 
 class UrlsHelper(BaseHelper):
     """Helper that provides shortcuts to various url operations"""
     name = 'urls'
+    config_options = {
+        'urls.allowed_domains': ListOption(default=lambda: []),
+        'urls.forbidden_domains': ListOption(default=lambda: [])
+    }
 
     def __init__(self):
         super(UrlsHelper, self).__init__()

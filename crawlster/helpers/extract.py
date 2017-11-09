@@ -14,7 +14,7 @@ class ExtractHelper(BaseHelper):
     def __init__(self):
         super(ExtractHelper, self).__init__()
 
-    def css(self, text, selector, attr=None):
+    def css(self, text, selector, attr=None, content=None):
         """Extracts data using css selector
 
         Returns a list of elements (as strings) with the extracted data
@@ -31,8 +31,10 @@ class ExtractHelper(BaseHelper):
         items = BeautifulSoup(text, 'html.parser').select(selector)
         if attr:
             return [i[attr] for i in items if attr in i.attrs]
+        elif content:
+            return [i.text for i in items]
         else:
-            return [i for i in items]
+            return [str(i) for i in items]
 
     def xpath(self, text, selector):
         if not lxml:

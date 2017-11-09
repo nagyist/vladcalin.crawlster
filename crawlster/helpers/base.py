@@ -1,6 +1,7 @@
 class BaseHelper(object):
     """Base class for helpers"""
     is_helper = True
+    config_options = {}
 
     def __init__(self):
         self.config = None
