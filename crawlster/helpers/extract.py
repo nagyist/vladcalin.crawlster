@@ -32,7 +32,7 @@ class ExtractHelper(BaseHelper):
         if attr:
             return [i[attr] for i in items if attr in i.attrs]
         else:
-            return [str(i) for i in items]
+            return [i for i in items]
 
     def xpath(self, text, selector):
         if not lxml:

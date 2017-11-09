@@ -10,6 +10,7 @@ from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
 from crawlster.exceptions import get_full_error_msg
+from crawlster.helpers.queue import QueueHelper
 from crawlster.helpers.request import RequestsHelper
 from crawlster.helpers.stats import StatsHelper
 
@@ -44,9 +45,6 @@ class Crawlster(object):
     HELPER_FLAG = 'is_helper'
     # stats
     STAT_ITEMS = 'items'
-    STAT_REQUESTS = 'http.requests'
-    STAT_DOWNLOAD = 'http.download'
-    STAT_UPLOAD = 'http.upload'
     STAT_ERRORS = 'errors'
     STAT_START_TIME = 'time.start'
     STAT_FINISH_TIME = 'time.finish'
@@ -64,6 +62,7 @@ class Crawlster(object):
     stats = StatsHelper()
     log = LoggingHelper()
     http = RequestsHelper()
+    queue = QueueHelper(strategy='lifo')
     # Various utility helpers
     urls = UrlsHelper()
     regex = RegexHelper()
@@ -77,7 +76,6 @@ class Crawlster(object):
         if self.config is None:
             raise ConfigurationError(get_full_error_msg('missing_config'))
 
-        self.queue = None
         self.pool = None
         self.inject_helpers()
         self.inject_handlers()
@@ -87,18 +85,26 @@ class Crawlster(object):
 
     def inject_helpers(self):
         """Injects the current config into all helpers"""
+        for helper in self.iter_helpers():
+            self.inject_config_and_crawler(helper)
+
+    def inject_handlers(self):
+        for handler in self.iter_item_handlers():
+            self.inject_config_and_crawler(handler)
+
+    def iter_helpers(self):
         for attrname in dir(self):
             attr_obj = getattr(self, attrname)
             if hasattr(attr_obj, self.HELPER_FLAG) and \
                     getattr(attr_obj, self.HELPER_FLAG):
-                self.inject_config_and_crawler(attr_obj)
+                yield attr_obj
 
-    def inject_handlers(self):
+    def iter_item_handlers(self):
         if isinstance(self.item_handler, (list, tuple)):
             for handler in self.item_handler:
-                self.inject_config_and_crawler(handler)
+                yield handler
         else:
-            self.inject_config_and_crawler(self.item_handler)
+            yield self.item_handler
 
     def inject_config_and_crawler(self, to_be_injected):
         to_be_injected.config = self.config
@@ -108,13 +114,7 @@ class Crawlster(object):
     def init_context(self):
         """Initializes the crawler context (the queue and the worker pool)"""
         # prepare queue
-        self.queue = self.get_queue()
         self.pool = self.get_pool()
-
-    def get_queue(self):
-        """Creates and returns the job queue"""
-        self.log.debug('Creating the task queue')
-        return queue.Queue()
 
     def get_pool(self):
         """Creates and returns the worker pool"""
@@ -150,6 +150,7 @@ class Crawlster(object):
         start = self.stats.get(self.STAT_START_TIME)
         duration = (finish - start).total_seconds()
         self.stats.set(self.STAT_DURATION, duration)
+        self.finalize()
 
     def worker(self):
         """Worker body that executes the jobs"""
@@ -219,3 +220,9 @@ class Crawlster(object):
                 handler.handle(item)
         else:
             self.item_handler.handle(item)
+
+    def finalize(self):
+        for handler in self.iter_item_handlers():
+            handler.finalize()
+        for helper in self.iter_helpers():
+            helper.finalize()

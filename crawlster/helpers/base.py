@@ -12,3 +12,7 @@ class BaseHelper(object):
         Called right after self.config and self.crawler is populated.
         """
         pass
+
+    def finalize(self):
+        """Perform cleanup on crawl finish"""
+        pass

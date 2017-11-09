@@ -8,3 +8,6 @@ class BaseItemHandler(object):
 
     def handle(self, item):
         raise NotImplementedError()
+
+    def finalize(self):
+        pass
