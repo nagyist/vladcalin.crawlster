@@ -1,13 +1,16 @@
+"""This module contains various validators.
+
+They are used mainly in the config options definitions.
+"""
+
+
 class ValidationError(Exception):
     """Thrown when validation fails"""
 
 
-def validate_required(value):
-    if not value:
-        raise ValidationError('Is required')
-
-
 def validate_isinstance(req_type):
+    """Validates that an instance is of a certain type"""
+
     def actual_validator(value):
         if not isinstance(value, req_type):
             raise ValidationError(
@@ -19,6 +22,8 @@ def validate_isinstance(req_type):
 
 
 def one_of(*choices):
+    """Validates that an instance is one of the specified values"""
+
     def actual_validator(value):
         if value not in choices:
             raise ValidationError(

@@ -8,6 +8,16 @@ from crawlster.helpers.base import BaseHelper
 
 
 class LoggingHelper(BaseHelper):
+    """Logging helper that handles all the crawling logging.
+
+    Must provide the following methods:
+
+    - initialize() (inherited from BaseHelper)
+    - ``debug(*args, **kwargs)`` compatible with the :py:mod:`logging`
+       interface
+    - same for ``info``, ``warning``, ``error`` and ``critical``
+
+    """
     name = 'log'
     valid_log_levels = ('debug', 'info', 'warning', 'error', 'critical')
     config_options = {
@@ -21,6 +31,7 @@ class LoggingHelper(BaseHelper):
         self.logger = None
 
     def initialize(self):
+        """Creates and initializes the logger"""
         level = self.parse_level(self.config.get('log.level'))
 
         logger = logging.getLogger('crawlster')
@@ -30,6 +41,7 @@ class LoggingHelper(BaseHelper):
         self.logger = logger
 
     def make_stream_handler(self, level):
+        """Creates a colored stream handler that writes to STDOUT"""
         colored_formatter = colorlog.ColoredFormatter(self.DEFAULT_FORMAT)
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setFormatter(colored_formatter)
@@ -43,4 +55,5 @@ class LoggingHelper(BaseHelper):
         return getattr(self.logger, item)
 
     def parse_level(self, level_name):
+        """Converts human readable level name to logging constants"""
         return getattr(logging, level_name.upper())

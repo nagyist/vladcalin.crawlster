@@ -1,6 +1,8 @@
 class BaseHelper(object):
     """Base class for helpers"""
     is_helper = True
+    #: A mapping of name - option definition.
+    #: Option definition must be an instance of :py:class:`ConfigOption`
     config_options = {}
 
     def __init__(self):
