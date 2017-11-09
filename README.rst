@@ -15,11 +15,11 @@ Features:
 
 To do until the first release:
 
-- stats aggregation
+- stats aggregation (done)
 - monitoring
 - error reporting
 - more item handlers
-    - json lines
+    - json lines (done)
     - xml document
     - http handler (submitting items to APIs)
     - some database handlers (Mongodb, sql, etc)
