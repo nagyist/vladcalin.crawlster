@@ -1,3 +1,6 @@
+
+.PHONY: docs
+
 test:
 	pytest tests/
 	pycodestyle crawlster/
@@ -5,6 +8,10 @@ test:
 
 clean:
 	find . -name "*.pyc" -delete
+
+
+docs:
+	$(MAKE) -C docs html
 
 
 install_dev:

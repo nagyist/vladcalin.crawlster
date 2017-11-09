@@ -1,8 +1,3 @@
-.. crawlster documentation master file, created by
-   sphinx-quickstart on Sun Jan  8 20:26:02 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to crawlster's documentation!
 =====================================
 
@@ -13,6 +8,12 @@ Welcome to crawlster's documentation!
    :caption: Contents:
 
    tutorial
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API reference
+
+   modules
 
 .. include:: ../../changelog.rst
 
