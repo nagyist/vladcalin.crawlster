@@ -82,7 +82,7 @@ class NumberOption(OptionWithDefaultValidators):
 
 class StringOption(OptionWithDefaultValidators):
     """A string option"""
-    default_validators = [validate_isinstance(int)]
+    default_validators = [validate_isinstance(str)]
 
 
 class ListOption(OptionWithDefaultValidators):
@@ -140,7 +140,7 @@ class Configuration(object):
             if op_errors:
                 errors[option_key] = op_errors
         if errors:
-            raise Configuration(errors)
+            raise ConfigurationError(errors)
 
     def validate_single_option(self, option_name):
         """Validates a single option given its name
