@@ -8,12 +8,9 @@ Welcome to crawlster's documentation!
    :caption: Contents:
 
    tutorial
-
-.. toctree::
-   :maxdepth: 3
-   :caption: API reference
-
-   modules
+   howto/index
+   modules/index
+   contributing
 
 .. include:: ../../changelog.rst
 
