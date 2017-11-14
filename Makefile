@@ -19,6 +19,7 @@ install_dev:
 	pip install -r requirements/test.txt
 
 
+release: release_minor
 
 release_patch:
 	bumpversion minor

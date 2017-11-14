@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.1.0 (first public realease)
------------------------------
+Current version
+---------------
 
 - Work in progress

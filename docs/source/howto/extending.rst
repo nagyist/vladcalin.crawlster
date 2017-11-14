@@ -1,2 +1,2 @@
-Extending with helpers
-======================
+Extending the crawler with helpers
+==================================
