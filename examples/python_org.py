@@ -1,3 +1,10 @@
+"""
+An example crawler that extracts modules info from the Python documentation.
+
+The results are reported to stdout with yellow (logged with warning level) and
+written in a ``pymodules.jsonl`` file in the current directory.
+"""
+
 import pprint
 
 from crawlster.core import Crawlster
@@ -27,7 +34,7 @@ class PythonOrgCrawler(Crawlster):
         self.urls.mark_seen(url)
         hrefs = self.extract.css(data.content, 'a', attr='href')
         self.log.warning(hrefs)
-        full_links = self.urls.join_paths(url, hrefs)
+        full_links = self.urls.multi_join(url, hrefs)
         self.log.warning(full_links)
         for link in full_links:
             if '#' in link:

@@ -27,6 +27,8 @@ class ExtractHelper(BaseHelper):
             attr (str or None):
                 if present, returns a list of the attributes of the extracted
                 items
+            content (bool):
+                If should return only the content/text of the element
         """
         items = BeautifulSoup(text, 'html.parser').select(selector)
         if attr:
@@ -35,12 +37,6 @@ class ExtractHelper(BaseHelper):
             return [i.text for i in items]
         else:
             return [str(i) for i in items]
-
-    def xpath(self, text, selector):
-        if not lxml:
-            raise RuntimeError('lxml in required to use xpath')
-        from lxml import html
-        return html.fromstring(text).xpath(selector)
 
     def parse_bs4(self, text):
         """Parses data using BeautifulSoup4"""

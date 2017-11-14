@@ -42,7 +42,7 @@ class UrlsHelper(BaseHelper):
         """Returns whether the url was previously marked as seen or not"""
         return url in self.already_seen
 
-    def join_paths(self, base, paths):
+    def multi_join(self, base, paths):
         """Given a base of urls and a list of paths, returns a list of
         joined urls
         """

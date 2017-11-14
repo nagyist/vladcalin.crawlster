@@ -245,6 +245,12 @@ class Crawlster(object):
             helper.finalize()
 
     def populate_config(self):
+        """Populates the config with the options from helpers and item handlers
+
+        Each helper and item handler defines a list of options that it uses.
+        This method will visit each helper and item handler to populate the
+        config instance with those options.
+        """
         for helper in self.iter_helpers():
             self.config.register_options(helper.config_options)
         for handler in self.iter_item_handlers():
