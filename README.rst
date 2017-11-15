@@ -1,6 +1,10 @@
 crawlster
 =========
 
+.. image:: https://readthedocs.org/projects/crawlster/badge/?version=latest
+   :target: http://crawlster.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 A simple crawler framework
 
 .. note::
