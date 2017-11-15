@@ -5,6 +5,9 @@ crawlster - small and light web crawlers
    :target: http://crawlster.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+.. image:: https://travis-ci.org/vladcalin/crawlster.svg?branch=master
+   :target: https://travis-ci.org/vladcalin/crawlster
+
 A simple crawler framework
 
 .. note::
