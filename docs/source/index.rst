@@ -1,6 +1,3 @@
-Welcome to crawlster's documentation!
-=====================================
-
 .. include:: ../../README.rst
 
 Helpers

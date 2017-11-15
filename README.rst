@@ -1,5 +1,5 @@
-crawlster
-=========
+crawlster - small and light web crawlers
+========================================
 
 .. image:: https://readthedocs.org/projects/crawlster/badge/?version=latest
    :target: http://crawlster.readthedocs.io/en/latest/?badge=latest
