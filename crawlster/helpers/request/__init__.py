@@ -3,7 +3,6 @@ import requests.auth
 import requests.exceptions
 
 from crawlster.helpers.base import BaseHelper
-from crawlster.helpers.request.request import HttpRequest
 
 
 class RequestsHelper(BaseHelper):

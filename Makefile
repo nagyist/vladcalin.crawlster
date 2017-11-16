@@ -3,7 +3,7 @@
 
 test:
 	pytest tests/
-	pycodestyle crawlster/
+	flake8 crawlster/
 
 
 clean:
