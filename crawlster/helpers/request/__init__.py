@@ -3,6 +3,9 @@ import requests.auth
 import requests.exceptions
 
 from crawlster.helpers.base import BaseHelper
+from crawlster.helpers.request.request import (
+    HttpRequest, GetRequest, PostRequest)
+from crawlster.helpers.request.response import HttpResponse
 
 
 class RequestsHelper(BaseHelper):
@@ -21,49 +24,64 @@ class RequestsHelper(BaseHelper):
         """Initializes the session used for making requests"""
         self.session = requests.session()
 
-    def make_request(self, url, method='get', query_params=None, data=None,
-                     headers=None, *args, **kwargs):
-        """Wrapper over request.Session.request
+    def open(self, http_request: HttpRequest):
+        """Opens a given HTTP request.
 
-        See more:
-            http://docs.python-requests.org/en/master/api/#requests.Session.request
+        Args:
+            http_request (HttpRequest):
+                The crawlster.helpers.request.request.HttpRequest instance
+                with the required info for making the request
+            
+        Returns:
+            crawlster.helpers.request.response.HttpResponse
         """
         self.crawler.stats.incr(self.STAT_REQUESTS)
 
         try:
-            resp = self.session.request(method, url, query_params, data,
-                                        headers, *args, **kwargs)
+            resp = self.session.request(
+                http_request.method, http_request.url,
+                http_request.query_params,
+                http_request.data, http_request.headers
+            )
+            http_resp = HttpResponse(
+                http_request, resp.status_code, resp.headers, resp.content
+            )
             self.crawler.stats.incr(self.STAT_DOWNLOAD,
-                                    by=self._compute_resp_size(resp))
+                                    by=self._compute_resp_size(http_resp))
             self.crawler.stats.incr(self.STAT_UPLOAD,
-                                    by=self._compute_req_size(resp.request))
-            return resp
+                                    by=self._compute_req_size(http_request))
+            return
         except requests.exceptions.RequestException as e:
             self.crawler.stats.add(self.STAT_HTTP_ERRORS, e)
             self.crawler.log.error(str(e))
 
-    def get(self, *args, **kwargs):
+    def get(self, url, query_params=None, headers=None):
         """Makes a GET request"""
-        return self.make_request(*args, **kwargs, method='get')
+        return self.open(
+            GetRequest(url, query_params or {}, headers or {})
+        )
 
-    def post(self, *args, **kwargs):
+    def post(self, url, data=None, query_params=None, headers=None):
         """Makes a POST request"""
-        return self.make_request(*args, **kwargs, method='post')
+        return self.open(PostRequest(url, data, query_params, headers))
 
-    def patch(self, *args, **kwargs):
+    def patch(self, url, data=None, query_params=None, headers=None):
         """Makes a PATCH request"""
-        return self.make_request(*args, **kwargs, method='patch')
+        return self.open(
+            HttpRequest(url, 'PATCH', query_params, data, headers))
 
-    def delete(self, *args, **kwargs):
+    def delete(self, url, data=None, query_params=None, headers=None):
         """Makes a DELETE request"""
-        return self.make_request(*args, **kwargs, method='delete')
+        return self.open(
+            HttpRequest(url, 'DELETE', query_params, data, headers))
 
-    def options(self, *args, **kwargs):
+    def options(self, url, query_params=None, headers=None):
         """Makes an OPTIONS request"""
-        return self.make_request(*args, **kwargs, method='options')
+        return self.open(
+            HttpRequest(url, 'OPTIONS', query_params, None, headers))
 
     def _compute_resp_size(self, response):
-        return len(response.content)
+        return len(response.body)
 
     def _compute_req_size(self, request):
-        return len(request.body or '')
+        return len(request.data or '')
