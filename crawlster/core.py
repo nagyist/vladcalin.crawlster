@@ -11,7 +11,7 @@ from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
 from crawlster.exceptions import get_full_error_msg
 from crawlster.helpers.queue import QueueHelper
-from crawlster.helpers.request import RequestsHelper
+from crawlster.helpers.http.requests import RequestsHelper
 from crawlster.helpers.stats import StatsHelper
 
 

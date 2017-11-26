@@ -1,4 +1,5 @@
 -r test.txt
+-e .
 bumpversion
 twine
 sphinx

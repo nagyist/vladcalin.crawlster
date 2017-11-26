@@ -3,12 +3,13 @@ import requests.auth
 import requests.exceptions
 
 from crawlster.helpers.base import BaseHelper
-from crawlster.helpers.request.request import (
+from crawlster.helpers.http.request import (
     HttpRequest, GetRequest, PostRequest)
-from crawlster.helpers.request.response import HttpResponse
+from crawlster.helpers.http.response import HttpResponse
 
 
 class RequestsHelper(BaseHelper):
+    """Helper for making HTTP requests using the requests library"""
     name = 'http'
 
     STAT_DOWNLOAD = 'http.download'
@@ -29,11 +30,11 @@ class RequestsHelper(BaseHelper):
 
         Args:
             http_request (HttpRequest):
-                The crawlster.helpers.request.request.HttpRequest instance
+                The crawlster.helpers.http.request.HttpRequest instance
                 with the required info for making the request
-            
+
         Returns:
-            crawlster.helpers.request.response.HttpResponse
+            crawlster.helpers.http.response.HttpResponse
         """
         self.crawler.stats.incr(self.STAT_REQUESTS)
 
@@ -50,7 +51,7 @@ class RequestsHelper(BaseHelper):
                                     by=self._compute_resp_size(http_resp))
             self.crawler.stats.incr(self.STAT_UPLOAD,
                                     by=self._compute_req_size(http_request))
-            return
+            return http_resp
         except requests.exceptions.RequestException as e:
             self.crawler.stats.add(self.STAT_HTTP_ERRORS, e)
             self.crawler.log.error(str(e))

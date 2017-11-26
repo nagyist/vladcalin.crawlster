@@ -32,7 +32,7 @@ class PythonOrgCrawler(Crawlster):
         if not data:
             return
         self.urls.mark_seen(url)
-        hrefs = self.extract.css(data.content, 'a', attr='href')
+        hrefs = self.extract.css(data.body, 'a', attr='href')
         self.log.warning(hrefs)
         full_links = self.urls.multi_join(url, hrefs)
         self.log.warning(full_links)
@@ -46,9 +46,9 @@ class PythonOrgCrawler(Crawlster):
             return
         resp = self.http.get(url)
         self.urls.mark_seen(url)
-        if not self.looks_like_module_page(resp.content):
+        if not self.looks_like_module_page(resp.body):
             return
-        module_name = self.extract.css(resp.content,
+        module_name = self.extract.css(resp.body,
                                        'h1 a.reference.internal code span',
                                        content=True)
         for res in module_name:
