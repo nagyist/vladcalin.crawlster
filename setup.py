@@ -18,13 +18,23 @@ setup(
 
     description="None",
     long_description="None",
+    license='MIT',
 
+    include_package_data=True,
     packages=find_packages(),
     install_requires=requirements('base.txt'),
-    test_require=requirements('test.txt'),
     extras_require={
         'advanced': [
             'lxml'
         ]
-    }
+    },
+
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ]
 )

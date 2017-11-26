@@ -1,5 +1,5 @@
 
-.PHONY: docs
+.PHONY: docs build
 
 test:
 	pytest tests/
@@ -17,6 +17,9 @@ docs:
 install_dev:
 	pip install -e .
 	pip install -r requirements/test.txt
+
+build:
+	python setup.py sdist bdist_wheel
 
 
 release: release_minor
