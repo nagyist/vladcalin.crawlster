@@ -3,7 +3,7 @@ import pytest
 from crawlster.config import Configuration, ConfigurationError
 from crawlster.exceptions import MissingValueError
 from crawlster.validators import validate_isinstance, \
-    ValidationError, one_of
+    ValidationError, one_of, is_url
 
 
 @pytest.mark.parametrize('config_opts, exc_type', [
@@ -44,8 +44,10 @@ def test_config_good_init(config_opts):
     (one_of(1, 2, 3), 3, False),
     (one_of(1, 2, 3), 4, True),
     (one_of('item1', 'item2', 'item3'), 'item1', False),
-    (one_of('item1', 'item2', 'item3'), 'item5', True)
-
+    (one_of('item1', 'item2', 'item3'), 'item5', True),
+    (is_url, 'http://localhost:2222/test', False),
+    (is_url, 'http://localhost:2222', False),
+    (is_url, 'this_is_invalid', True),
 ])
 def test_validators(validator, value, fails):
     """Validators raise exception only on invalid values"""

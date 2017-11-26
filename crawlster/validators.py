@@ -2,6 +2,7 @@
 
 They are used mainly in the config options definitions.
 """
+import urllib.parse
 
 
 class ValidationError(Exception):
@@ -32,3 +33,12 @@ def one_of(*choices):
                 ))
 
     return actual_validator
+
+
+def is_url(value):
+    """Validates that the value represents a valid URL"""
+    result = urllib.parse.urlparse(value)
+    if result.scheme and result.netloc:
+        return True
+    else:
+        raise ValidationError('Invalid URL: {}'.format(value))

@@ -1,6 +1,6 @@
 import os
 
-from .validators import ValidationError, validate_isinstance, one_of
+from .validators import ValidationError, validate_isinstance, one_of, is_url
 from .exceptions import ConfigurationError, OptionNotDefinedError, \
     MissingValueError
 
@@ -100,6 +100,15 @@ class ChoiceOption(ConfigOption):
             raise ValueError(msg)
         validators = [one_of(choices)] + (extra_validators or [])
         super(ChoiceOption, self).__init__(validators, default, required)
+
+
+class UrlOption(ConfigOption):
+    """An option whose value must be a valid URL"""
+
+    def __init__(self, default=None, required=False,
+                 extra_validators=None):
+        validators = [is_url] + (extra_validators or [])
+        super(UrlOption, self).__init__(validators, default, required)
 
 
 #: The core options used by the framework core

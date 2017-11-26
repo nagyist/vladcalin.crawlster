@@ -11,6 +11,7 @@ from crawlster.core import Crawlster
 from crawlster.config import Configuration
 from crawlster.handlers.jsonl import JsonLinesHandler
 from crawlster.handlers.log_handler import LogItemHandler
+from crawlster.handlers.db.mongo import MongodbItemHandler
 
 
 class PythonOrgCrawler(Crawlster):
@@ -22,10 +23,13 @@ class PythonOrgCrawler(Crawlster):
         'core.start_urls': [
             'https://docs.python.org/3/library/index.html'],
         'log.level': 'debug',
-        'pool.workers': 3
+        'pool.workers': 3,
+
+        'mongodb.url': 'mongodb://localhost:27017'
     })
 
-    item_handler = [LogItemHandler(), JsonLinesHandler('pymodules.jsonl')]
+    item_handler = [LogItemHandler(),
+                    MongodbItemHandler()]
 
     def step_start(self, url):
         data = self.http.get(url)
