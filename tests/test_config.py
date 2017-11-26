@@ -1,7 +1,7 @@
 import pytest
 
-from crawlster.config import Configuration, ConfigurationError
-from crawlster.exceptions import MissingValueError
+from crawlster.config import Configuration
+from crawlster.exceptions import MissingValueError, ConfigurationError
 from crawlster.validators import validate_isinstance, \
     ValidationError, one_of, is_url
 

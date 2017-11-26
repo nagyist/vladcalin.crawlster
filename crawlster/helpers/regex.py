@@ -1,11 +1,17 @@
 import re
+
 from crawlster.helpers.base import BaseHelper
 
 
 class RegexHelper(BaseHelper):
     """Helper that provides shortcuts for various operations with regexes
 
-    Provides regex compiling cache for optimizing regex reutilization.
+    Provides regex compiling cache for optimizing regex reusability.
+
+    Note:
+        It is strongly unrecommended to use regex to parse HTML content.
+        Please see the ``.extract`` helper to more convenient and less error
+        prone methods to parse HTML.
     """
     name = 'regex'
 

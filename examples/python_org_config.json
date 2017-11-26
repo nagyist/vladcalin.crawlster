@@ -1,0 +1,9 @@
+{
+  "core.start_step": "step_start",
+  "core.start_urls": [
+    "https://docs.python.org/3/library/index.html"
+  ],
+  "log.level": "debug",
+  "pool.workers": 3,
+  "mongodb.url": "mongodb://localhost:27017"
+}

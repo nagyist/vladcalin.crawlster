@@ -7,29 +7,20 @@ written in a ``pymodules.jsonl`` file in the current directory.
 
 import pprint
 
+from crawlster.config.config import JsonConfiguration
 from crawlster.core import Crawlster
-from crawlster.config import Configuration
 from crawlster.handlers.jsonl import JsonLinesHandler
 from crawlster.handlers.log_handler import LogItemHandler
-from crawlster.handlers.db.mongo import MongodbItemHandler
 
 
 class PythonOrgCrawler(Crawlster):
     """
     This is an example crawler used to crawl info about all the Python modules
     """
-    config = Configuration({
-        'core.start_step': 'step_start',
-        'core.start_urls': [
-            'https://docs.python.org/3/library/index.html'],
-        'log.level': 'debug',
-        'pool.workers': 3,
-
-        'mongodb.url': 'mongodb://localhost:27017'
-    })
+    config = JsonConfiguration('examples/python_org_config.json')
 
     item_handler = [LogItemHandler(),
-                    MongodbItemHandler()]
+                    JsonLinesHandler('items.jsonl')]
 
     def step_start(self, url):
         data = self.http.get(url)

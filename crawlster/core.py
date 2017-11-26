@@ -4,12 +4,11 @@ import threading
 
 import time
 
-from crawlster.config import ConfigurationError
 from crawlster.handlers.stream import StreamItemHandler
 from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
 from crawlster.helpers import UrlsHelper, RegexHelper
-from crawlster.exceptions import get_full_error_msg
+from crawlster.exceptions import get_full_error_msg, ConfigurationError
 from crawlster.helpers.queue import QueueHelper
 from crawlster.helpers.http.requests import RequestsHelper
 from crawlster.helpers.stats import StatsHelper
