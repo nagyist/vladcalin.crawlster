@@ -1,3 +1,6 @@
+from crawlster.helpers.extract import Content
+
+
 class HttpResponse(object):
     """Class representing a http response"""
 
@@ -49,3 +52,7 @@ class HttpResponse(object):
 
     def is_success(self):
         return self.status_code < 400
+
+    @property
+    def extract(self):
+        return Content(self.body_str)

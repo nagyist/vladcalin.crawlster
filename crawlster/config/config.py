@@ -7,7 +7,7 @@ from crawlster.exceptions import OptionNotDefinedError, \
 
 #: The core options used by the framework
 CORE_OPTIONS = {
-    'core.start_step': StringOption(required=True),
+    'core.start_step': StringOption(default='start_step'),
     'core.start_urls': ListOption(required=True),
     'core.workers': NumberOption(default=os.cpu_count())
 }
@@ -44,7 +44,7 @@ class Configuration(object):
         return item in self.values
 
     def __getitem__(self, item):
-        """Retireves the value of the """
+        """Retrieves the value of the """
         return self.values[item]
 
     def validate_options(self):

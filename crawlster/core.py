@@ -20,6 +20,8 @@ class JobTypes:
 
 
 class Job(object):
+    """Base job class"""
+
     def __init__(self, type):
         self.type = type
 
@@ -28,14 +30,23 @@ class Job(object):
 
 
 class FuncJob(Job):
+    """Job used to tell the worker what to execute next"""
+
     def __init__(self, func, args, kwargs):
         super(FuncJob, self).__init__(JobTypes.FUNC)
         self.func = func
         self.args = args
         self.kwargs = kwargs
 
+    def __repr__(self):
+        return "Job(type={}, func={}, args= {}, kwargs={})".format(
+            self.type, self.func.__name__, self.args, self.kwargs
+        )
+
 
 class ExitJob(Job):
+    """Job used to signal finishing the crawling to the workers"""
+
     def __init__(self):
         super(ExitJob, self).__init__(JobTypes.EXIT)
 
