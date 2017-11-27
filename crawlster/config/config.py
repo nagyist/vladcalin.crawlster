@@ -2,8 +2,7 @@ import json
 import os
 
 from crawlster.config.options import StringOption, ListOption, NumberOption
-from crawlster.validators import ValidationError
-from crawlster.exceptions import ConfigurationError, OptionNotDefinedError, \
+from crawlster.exceptions import OptionNotDefinedError, \
     MissingValueError
 
 #: The core options used by the framework
@@ -17,56 +16,47 @@ CORE_OPTIONS = {
 class Configuration(object):
     """Configuration object that stores key-value pairs of options"""
 
-    def __init__(self, options):
-        """Initializes the values of the configuration object"""
-        self.options = options
-        self.defined_options = CORE_OPTIONS
+    def __init__(self, options=None):
+        self.defined_opts = CORE_OPTIONS
+        self.values = options or {}
 
-    def register_options(self, options_dict):
-        """Registers multiple option declarations in the current config """
-        self.defined_options.update(options_dict)
+    def register_options(self, options):
+        self.defined_opts.update(options)
 
-    def __getattr__(self, item):
-        return self.retrieve_value(item)
+    def get(self, key):
+        if key not in self.defined_opts:
+            raise OptionNotDefinedError(
+                'Option "{}" is not defined'.format(key))
+        opt_specs = self.defined_opts[key]
+        if key not in self:
+            if opt_specs.required:
+                raise MissingValueError(
+                    'Option {} is required but its value '
+                    'could not be determined'.format(key))
+            else:
+                return opt_specs.get_default_value()
+        value = self[key]
+        opt_specs.validate(value)
+        return value
 
-    def retrieve_value(self, key):
-        """Retrieves a value. 
+    def __contains__(self, item):
+        """Returns whether the value is explicitly provided by the config"""
+        return item in self.values
 
-        If cannot determine its value, raises KeyError
-        """
-        return self.options[key]
+    def __getitem__(self, item):
+        """Retireves the value of the """
+        return self.values[item]
 
-    def get(self, key, **kwargs):
-        """Retrieves the value of the specified option
-
-        The returned value is the one passed in the config initialization or
-        the default value.
-
-        Args:
-            key (str):
-                The key of the option for which the value must be returned
-            default:
-                The default value to return if the specified key cannot
-                be retrieved. If not specified, will raise a KeyError
-
-        Raises:
-            OptionNotDefinedError:
-                When the specified key is not defined and raise_if_not_defined
-                is True
-        """
-        try:
-            value = self.retrieve_value(key)
-            return value
-        except KeyError:
-            if 'default' not in kwargs:
-                raise
-            return kwargs.get('default')
+    def validate_options(self):
+        for key in self.defined_opts:
+            self.get(key)
 
 
 class JsonConfiguration(Configuration):
     """Reads the configuration from a json file"""
 
     def __init__(self, file_path):
+        super(JsonConfiguration, self).__init__()
         with open(file_path, 'r') as fp:
             options = json.load(fp)
-        super(JsonConfiguration, self).__init__(options)
+        self.values = options

@@ -34,6 +34,19 @@ class ConfigOption(object):
         else:
             return self.default
 
+    def validate(self, value):
+        """Runs all validators against a provided value
+
+        Raises:
+            ValidationError:
+                When the validation fails
+
+        Returns:
+            None when validation succeeds
+        """
+        for validator in self.validators:
+            validator(value)
+
 
 #: alias for the config option as being an optional value
 Optional = ConfigOption
@@ -95,10 +108,6 @@ class ChoiceOption(ConfigOption):
         super(ChoiceOption, self).__init__(validators, default, required)
 
 
-class UrlOption(ConfigOption):
+class UrlOption(OptionWithDefaultValidators):
     """An option whose value must be a valid URL"""
-
-    def __init__(self, default=None, required=False,
-                 extra_validators=None):
-        validators = [is_url] + (extra_validators or [])
-        super(UrlOption, self).__init__(validators, default, required)
+    default_validators = [is_url]

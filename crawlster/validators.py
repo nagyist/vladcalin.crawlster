@@ -9,20 +9,32 @@ class ValidationError(Exception):
     """Thrown when validation fails"""
 
 
-def validate_isinstance(req_type):
-    """Validates that an instance is of a certain type"""
+class ValidateIsInstance(object):
+    """Validates that a value is of certain type"""
 
-    def actual_validator(value):
-        if not isinstance(value, req_type):
+    def __init__(self, req_type):
+        """Initializes the validator
+
+        Args:
+            req_type (type or tuple):
+                a single type or a tuple of type instances to check against
+        """
+        self._type = req_type
+
+    def __call__(self, value):
+        """Performs the actual validation"""
+        if not isinstance(value, self._type):
             raise ValidationError(
                 'Expected type {} byt got {} instead'.format(
-                    type(req_type).__name__, type(value).__name__
+                    self._type, type(value).__name__
                 ))
 
-    return actual_validator
+
+# legacy
+validate_isinstance = ValidateIsInstance
 
 
-def one_of(*choices):
+def one_of(choices):
     """Validates that an instance is one of the specified values"""
 
     def actual_validator(value):
