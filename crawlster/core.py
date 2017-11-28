@@ -70,9 +70,6 @@ class Crawlster(object):
     STAT_FINISH_TIME = 'time.finish'
     STAT_DURATION = 'time.duration'
 
-    # the configuration object
-    config = None
-
     # Helpers
     # =======
     # we directly attach them because we want the nice auto complete
@@ -91,8 +88,9 @@ class Crawlster(object):
     # a single item handler or a list/tuple of them
     item_handler = StreamItemHandler()
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Initializes the crawler"""
+        self.config = config
         if self.config is None:
             raise ConfigurationError(get_full_error_msg('missing_config'))
 
@@ -213,11 +211,7 @@ class Crawlster(object):
         try:
             next_item = job.func(*job.args, **job.kwargs)
         except Exception as e:
-            self.log.error(str(e))
-            exc_type, exc_instance, exc_tb = sys.exc_info()
-            for line in traceback.format_exception(exc_type, exc_instance,
-                                                   exc_tb):
-                self.log.debug(line.rstrip())
+            self.report_error(e, job)
             self.stats.add(self.STAT_ERRORS, {
                 'func': job.func.__name__,
                 'args': job.args,
@@ -233,6 +227,22 @@ class Crawlster(object):
         elif isinstance(next_item, Job):
             # is a job instance, must be further processes
             self.queue.put(next_item)
+
+    def report_error(self, e, failed_job):
+        """Reports a failed job
+        
+        Args:
+            e (Exception):
+                The exception instance that was thrown
+            failed_job (Job):
+                The job instance that caused the exception
+        """
+        self.log.error('Job failed: {}'.format(failed_job))
+        exc_type, exc_instance, exc_tb = sys.exc_info()
+        for line in traceback.format_exception(exc_type, exc_instance,
+                                               exc_tb):
+            self.log.error(line.rstrip())
+        self.log.error(str(e))
 
     def finalize(self):
         """Performs the finalize action on all item handlers and helpers"""

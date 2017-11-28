@@ -3,15 +3,6 @@ from crawlster.handlers import JsonLinesHandler
 
 
 class MyCrawler(crawlster.Crawlster):
-    # We define some parameters here
-    config = crawlster.Configuration({
-        # the start pages
-        'core.start_urls': ['https://www.python.org/'],
-        # the method that will process the start pages
-        'core.start_step': 'step_start',
-        # to see in-depth what happens
-        'log.level': 'debug'
-    })
     # items will be saved to items.jsonl
     item_handler = JsonLinesHandler('items.jsonl')
 
@@ -35,7 +26,15 @@ class MyCrawler(crawlster.Crawlster):
 
 if __name__ == '__main__':
     # starting the crawler
-    crawler = MyCrawler()
+    cfg = {
+        # the start pages
+        'core.start_urls': ['https://www.python.org/'],
+        # the method that will process the start pages
+        'core.start_step': 'step_start',
+        # to see in-depth what happens
+        'log.level': 'debug'
+    }
+    crawler = MyCrawler(crawlster.Configuration(cfg))
     # this will block until everything finishes
     crawler.start()
     # printing some run stats, such as the number of requests, how many items

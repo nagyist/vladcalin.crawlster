@@ -17,8 +17,6 @@ class PythonOrgCrawler(Crawlster):
     """
     This is an example crawler used to crawl info about all the Python modules
     """
-    config = JsonConfiguration('examples/python_org_config.json')
-
     item_handler = [LogItemHandler(),
                     JsonLinesHandler('items.jsonl')]
 
@@ -54,6 +52,7 @@ class PythonOrgCrawler(Crawlster):
 
 
 if __name__ == '__main__':
-    crawler = PythonOrgCrawler()
+    crawler = PythonOrgCrawler(
+        JsonConfiguration('examples/python_org_config.json'))
     crawler.start()
     pprint.pprint(crawler.stats.dump())
