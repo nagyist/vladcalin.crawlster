@@ -4,6 +4,9 @@ import threading
 
 import time
 
+import sys
+import traceback
+
 from crawlster.handlers.stream import StreamItemHandler
 from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
@@ -211,6 +214,10 @@ class Crawlster(object):
             next_item = job.func(*job.args, **job.kwargs)
         except Exception as e:
             self.log.error(str(e))
+            exc_type, exc_instance, exc_tb = sys.exc_info()
+            for line in traceback.format_exception(exc_type, exc_instance,
+                                                   exc_tb):
+                self.log.debug(line.rstrip())
             self.stats.add(self.STAT_ERRORS, {
                 'func': job.func.__name__,
                 'args': job.args,

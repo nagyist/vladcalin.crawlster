@@ -62,6 +62,26 @@ class Content(object):
         else:
             return [str(i) for i in items]
 
+    def html_table(self, row, column, template=lambda cell: Content(cell)):
+        """Handles the content as a html table.
+
+        Facilitates access to a certain cell identified by row and column
+        (rows from ``thead`` are counted too).
+
+        Args:
+            row (int): row index
+            column (int): column index
+            template (callable): function to apply to the cell content. The
+                function must accept a single argument, the content of the
+                selected cell, as a Content instance
+
+        Raises:
+            IndexError:
+                When there is no cell with that row or column value
+        """
+        row = self.parsed_data.select('tr')[row]
+        return template(str(row.select('td')[column]))
+
 
 class ExtractHelper(BaseHelper):
     name = 'extract'
