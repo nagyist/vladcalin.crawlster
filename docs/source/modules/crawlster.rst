@@ -2,4 +2,8 @@ The crawlster module
 ====================
 
 .. automodule:: crawlster
-   :members:
+
+
+  .. autoclass:: crawlster.Crawlster
+    :members:
+
