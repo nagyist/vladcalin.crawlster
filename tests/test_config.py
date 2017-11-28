@@ -1,17 +1,11 @@
 import pytest
 
 from crawlster.config import Configuration
-from crawlster.exceptions import MissingValueError, ConfigurationError
 from crawlster.validators import validate_isinstance, \
     ValidationError, one_of, is_url
 
 
 @pytest.mark.parametrize('config_opts, exc_type', [
-    (
-            # missing core.start_urls
-            {'core.start_step': 'test'},
-            MissingValueError
-    ),
     (
             # wrong core.start_urls type
             {'core.start_urls': 'Hello there', 'core.start_step': 'test'},
