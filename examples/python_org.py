@@ -8,7 +8,7 @@ written in a ``pymodules.jsonl`` file in the current directory.
 import pprint
 
 from crawlster.config.config import JsonConfiguration
-from crawlster.core import Crawlster
+from crawlster.core import Crawlster, start
 from crawlster.handlers.jsonl import JsonLinesHandler
 from crawlster.handlers.log_handler import LogItemHandler
 
@@ -20,6 +20,7 @@ class PythonOrgCrawler(Crawlster):
     item_handler = [LogItemHandler(),
                     JsonLinesHandler('items.jsonl')]
 
+    @start
     def step_start(self, url):
         data = self.http.get(url)
         if not data:

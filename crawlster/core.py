@@ -17,6 +17,11 @@ from crawlster.helpers.http.requests import RequestsHelper
 from crawlster.helpers.stats import StatsHelper
 
 
+def start(method):
+    method._crawlster_start_step = True
+    return method
+
+
 class JobTypes:
     FUNC = 'func'
     EXIT = 'exit'
@@ -160,12 +165,10 @@ class Crawlster(object):
 
     def start(self):
         """Starts crawling based on the config"""
-        start_func_name = self.config.get('core.start_step')
         self.stats.set(self.STAT_START_TIME, datetime.datetime.now())
-        func = getattr(self, start_func_name, None)
+        func = self.get_start_step()
         if not func:
-            raise ConfigurationError(
-                'Could not find start step: {}'.format(start_func_name))
+            raise ConfigurationError('Could not find start step')
         start_urls = self.config.get('core.start_urls')
         # putting initial processing jobs into queue
         for start_url in start_urls:
@@ -230,7 +233,7 @@ class Crawlster(object):
 
     def report_error(self, e, failed_job):
         """Reports a failed job
-        
+
         Args:
             e (Exception):
                 The exception instance that was thrown
@@ -284,3 +287,10 @@ class Crawlster(object):
                 handler.handle(item)
         else:
             self.item_handler.handle(item)
+
+    def get_start_step(self):
+        for attrname in dir(self):
+            func = getattr(self, attrname)
+            flag = '_crawlster_start_step'
+            if callable(func) and hasattr(func, flag) and getattr(func, flag):
+                return func

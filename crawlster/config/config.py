@@ -1,7 +1,7 @@
 import json
 import os
 
-from crawlster.config.options import StringOption, ListOption, NumberOption
+from crawlster.config.options import ListOption, NumberOption
 from crawlster.exceptions import OptionNotDefinedError, \
     MissingValueError
 
@@ -9,7 +9,6 @@ from crawlster.exceptions import OptionNotDefinedError, \
 from crawlster.validators import ValidationError
 
 CORE_OPTIONS = {
-    'core.start_step': StringOption(default='start_step'),
     'core.start_urls': ListOption(required=True),
     'core.workers': NumberOption(default=os.cpu_count())
 }
