@@ -6,7 +6,7 @@ Helpers
 Http helpers
 ------------
 
-   .. autoclass:: crawlster.helpers.http.requests.RequestsHelper
+   .. autoclass:: crawlster.helpers.RequestsHelper
       :members:
 
 Http requests
@@ -23,5 +23,18 @@ Http responses
 
    .. autoclass:: crawlster.helpers.http.response.HttpResponse
       :members:
+
+Extract helpers
+---------------
+
+   .. autoclass:: crawlster.helpers.ExtractHelper
+      :members:
+
+Utility classes
+^^^^^^^^^^^^^^^
+
+   .. autoclass:: crawlster.helpers.extract.Content
+      :members:
+
 
 

@@ -8,12 +8,7 @@ crawlster - small and light web crawlers
 .. image:: https://travis-ci.org/vladcalin/crawlster.svg?branch=master
    :target: https://travis-ci.org/vladcalin/crawlster
 
-A simple crawler framework
-
-.. note::
-
-    This is a work in progress
-
+A simple, lightweight web crawling framework
 
 
 Features:
@@ -26,8 +21,8 @@ Features:
 What is crawlster?
 ------------------
 
-Crawlster is a web crawling library designed to save precious development
-time. It is very extensible and provides many shortcuts for the most common
+Crawlster is a web crawling library designed to build lightweight and reusable
+web crawlers. It is very extensible and provides many shortcuts for the most common
 tasks in a web crawler, such as HTTP request sending and parsing and info
 extraction.
 
@@ -59,15 +54,18 @@ Quick example
 
 This is the hello world equivalent for this library:
 
-import crawlster
-from crawlster.handlers import JsonLinesHandler
 
 ::
+
+   import crawlster
+   from crawlster.handlers import JsonLinesHandler
+
 
    class MyCrawler(crawlster.Crawlster):
        # items will be saved to items.jsonl
        item_handler = JsonLinesHandler('items.jsonl')
 
+       @crawlster.start
        def step_start(self, url):
            resp = self.http.get(url)
            # we select elements with the expression and we are interested

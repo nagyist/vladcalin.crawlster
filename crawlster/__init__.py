@@ -1,8 +1,9 @@
-from .config import Configuration
-from .core import Crawlster, Job
+from .config import Configuration, JsonConfiguration
+from .core import Crawlster, Job, start
 
 __all__ = [
     'Crawlster',
-    'Job',
-    'Configuration'
+    'Configuration',
+    'JsonConfiguration',
+    'start'
 ]

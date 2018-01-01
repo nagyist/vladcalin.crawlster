@@ -17,10 +17,8 @@ Configuration keys are populated from all helpers when the crawling starts.
 
 The following configuration keys are the default:
 
-- ``core.start_step`` - the name of the method where the crawling process
-  starts. Defaults to ``start_step``.
 - ``core.start_urls`` - a list of urls that will be firstly processed in the
-  start step.
+  start step. Is required.
 - ``core.workers`` - the number of worker threads to be used. Defaults to
   the number of CPU core.
 
@@ -53,3 +51,14 @@ Json configuration:
         "core.workers": 10,
         "core.start_urls": ["http://example.com", "http://example2.com"]
     }
+
+We then pass the configuration object on the crawler class initialisation
+
+::
+
+    configuration = Configuration(...)
+    crawler = MyCrawlerClass(configuration)
+    crawler.start()
+
+This is very useful when we need to reuse the same crawler to crawl multiple
+sites and only some configuration differs.

@@ -7,3 +7,4 @@ The crawlster module
   .. autoclass:: crawlster.Crawlster
     :members:
 
+  .. autofunction:: crawlster.start

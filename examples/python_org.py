@@ -7,8 +7,7 @@ written in a ``pymodules.jsonl`` file in the current directory.
 
 import pprint
 
-from crawlster.config.config import JsonConfiguration
-from crawlster.core import Crawlster, start
+from crawlster import Crawlster, start, JsonConfiguration, Configuration
 from crawlster.handlers.jsonl import JsonLinesHandler
 from crawlster.handlers.log_handler import LogItemHandler
 
@@ -27,9 +26,7 @@ class PythonOrgCrawler(Crawlster):
             return
         self.urls.mark_seen(url)
         hrefs = self.extract.css(data.body, 'a', attr='href')
-        self.log.warning(hrefs)
         full_links = self.urls.multi_join(url, hrefs)
-        self.log.warning(full_links)
         for link in full_links:
             if '#' in link:
                 continue
@@ -45,15 +42,21 @@ class PythonOrgCrawler(Crawlster):
         module_name = self.extract.css(resp.body,
                                        'h1 a.reference.internal code span',
                                        content=True)
-        for res in module_name:
-            self.submit_item({'name': res, 'url': url})
+        if not module_name:
+            return
+        self.submit_item({'name': module_name[0], 'url': url})
 
     def looks_like_module_page(self, page_content):
         return b'Source code:' in page_content
 
 
 if __name__ == '__main__':
-    crawler = PythonOrgCrawler(
-        JsonConfiguration('examples/python_org_config.json'))
+    crawler = PythonOrgCrawler(Configuration({
+        "core.start_urls": [
+            "https://docs.python.org/3/library/index.html"
+        ],
+        "log.level": "debug",
+        "pool.workers": 3,
+    }))
     crawler.start()
     pprint.pprint(crawler.stats.dump())
