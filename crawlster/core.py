@@ -4,6 +4,9 @@ import threading
 
 import time
 
+import sys
+import traceback
+
 from crawlster.handlers.stream import StreamItemHandler
 from crawlster.helpers.extract import ExtractHelper
 from crawlster.helpers.log import LoggingHelper
@@ -14,23 +17,46 @@ from crawlster.helpers.http.requests import RequestsHelper
 from crawlster.helpers.stats import StatsHelper
 
 
-class Job(object):
-    TYPE_FUNC = 'func'
-    TYPE_EXIT = 'exit'
+def start(method):
+    method._crawlster_start_step = True
+    return method
 
-    def __init__(self, type, func, args, kwargs):
+
+class JobTypes:
+    FUNC = 'func'
+    EXIT = 'exit'
+
+
+class Job(object):
+    """Base job class"""
+
+    def __init__(self, type):
         self.type = type
+
+    def __repr__(self):
+        return "Job(type={type})".format(type=self.type)
+
+
+class FuncJob(Job):
+    """Job used to tell the worker what to execute next"""
+
+    def __init__(self, func, args, kwargs):
+        super(FuncJob, self).__init__(JobTypes.FUNC)
         self.func = func
         self.args = args
         self.kwargs = kwargs
 
     def __repr__(self):
-        if self.type == self.TYPE_FUNC:
-            msg = "Job(type={type}, func={func}, args={args}, kwargs={kwargs}"
-            return msg.format(type=self.type, func=self.func.__name__,
-                              args=self.args, kwargs=self.kwargs)
-        elif self.type == self.TYPE_EXIT:
-            return "Job(type={type})".format(type=self.type)
+        return "Job(type={}, func={}, args= {}, kwargs={})".format(
+            self.type, self.func.__name__, self.args, self.kwargs
+        )
+
+
+class ExitJob(Job):
+    """Job used to signal finishing the crawling to the workers"""
+
+    def __init__(self):
+        super(ExitJob, self).__init__(JobTypes.EXIT)
 
 
 class Crawlster(object):
@@ -48,9 +74,6 @@ class Crawlster(object):
     STAT_START_TIME = 'time.start'
     STAT_FINISH_TIME = 'time.finish'
     STAT_DURATION = 'time.duration'
-
-    # the configuration object
-    config = None
 
     # Helpers
     # =======
@@ -70,8 +93,9 @@ class Crawlster(object):
     # a single item handler or a list/tuple of them
     item_handler = StreamItemHandler()
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Initializes the crawler"""
+        self.config = config
         if self.config is None:
             raise ConfigurationError(get_full_error_msg('missing_config'))
 
@@ -141,16 +165,14 @@ class Crawlster(object):
 
     def start(self):
         """Starts crawling based on the config"""
-        start_func_name = self.config.get('core.start_step')
         self.stats.set(self.STAT_START_TIME, datetime.datetime.now())
-        func = getattr(self, start_func_name, None)
+        func = self.get_start_step()
         if not func:
-            raise ConfigurationError(
-                'Could not find start step: {}'.format(start_func_name))
+            raise ConfigurationError('Could not find start step')
         start_urls = self.config.get('core.start_urls')
         # putting initial processing jobs into queue
         for start_url in start_urls:
-            self.queue.put(Job(Job.TYPE_FUNC, func, (start_url,), {}))
+            self.queue.put(FuncJob(func, (start_url,), {}))
         # start workers
         for worker_thread in self.pool:
             worker_thread.start()
@@ -158,7 +180,7 @@ class Crawlster(object):
         self.log.info('Finished')
         self.log.debug('Signaling workers to stop')
         for _ in range(len(self.pool)):
-            self.queue.put(Job(Job.TYPE_EXIT, None, None, None))
+            self.queue.put(ExitJob())
         # updating stats
         finish = datetime.datetime.now()
         self.stats.set(self.STAT_FINISH_TIME, finish)
@@ -179,7 +201,7 @@ class Crawlster(object):
                 time.sleep(0.2)
                 continue
             self.log.debug('Got job: {}'.format(job))
-            if job.type == Job.TYPE_EXIT:
+            if job.type == JobTypes.EXIT:
                 self.log.info('Received exit notification. Worker is exiting')
                 work_queue.task_done()
                 return
@@ -192,7 +214,7 @@ class Crawlster(object):
         try:
             next_item = job.func(*job.args, **job.kwargs)
         except Exception as e:
-            self.log.error(str(e))
+            self.report_error(e, job)
             self.stats.add(self.STAT_ERRORS, {
                 'func': job.func.__name__,
                 'args': job.args,
@@ -208,33 +230,22 @@ class Crawlster(object):
         elif isinstance(next_item, Job):
             # is a job instance, must be further processes
             self.queue.put(next_item)
-        elif isinstance(next_item, tuple):
-            # is a tuple of callable, args, kwargs
-            self.queue.put(self.make_job_from_item(next_item))
 
-    def make_job_from_item(self, next_item):
-        """Wraps returned item from job into a Job object"""
-        return Job(Job.TYPE_FUNC, next_item[0], next_item[1], next_item[2])
-
-    def schedule(self, func, *args, **kwargs):
-        """Schedules the next tep to be executed by workers"""
-        job = self.make_job_from_item((func, args, kwargs))
-        self.queue.put(job)
-
-    def submit_item(self, item):
-        """Submit an item to be handled by the item handlers
+    def report_error(self, e, failed_job):
+        """Reports a failed job
 
         Args:
-            item (dict):
-                The item that has to be processed
+            e (Exception):
+                The exception instance that was thrown
+            failed_job (Job):
+                The job instance that caused the exception
         """
-        self.log.debug('Submitted item {}'.format(item))
-        self.stats.incr(self.STAT_ITEMS)
-        if isinstance(self.item_handler, (list, tuple)):
-            for handler in self.item_handler:
-                handler.handle(item)
-        else:
-            self.item_handler.handle(item)
+        self.log.error('Job failed: {}'.format(failed_job))
+        exc_type, exc_instance, exc_tb = sys.exc_info()
+        for line in traceback.format_exception(exc_type, exc_instance,
+                                               exc_tb):
+            self.log.error(line.rstrip())
+        self.log.error(str(e))
 
     def finalize(self):
         """Performs the finalize action on all item handlers and helpers"""
@@ -254,3 +265,32 @@ class Crawlster(object):
             self.config.register_options(helper.config_options)
         for handler in self.iter_item_handlers():
             self.config.register_options(handler.config_options)
+
+    # Workflow methods
+
+    def schedule(self, func, *args, **kwargs):
+        """Schedules the next tep to be executed by workers"""
+        job = FuncJob(func, args, kwargs)
+        self.queue.put(job)
+
+    def submit_item(self, item):
+        """Submit an item to be handled by the item handlers
+
+        Args:
+            item (dict):
+                The item that has to be processed
+        """
+        self.log.debug('Submitted item {}'.format(item))
+        self.stats.incr(self.STAT_ITEMS)
+        if isinstance(self.item_handler, (list, tuple)):
+            for handler in self.item_handler:
+                handler.handle(item)
+        else:
+            self.item_handler.handle(item)
+
+    def get_start_step(self):
+        for attrname in dir(self):
+            func = getattr(self, attrname)
+            flag = '_crawlster_start_step'
+            if callable(func) and hasattr(func, flag) and getattr(func, flag):
+                return func

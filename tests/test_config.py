@@ -1,21 +1,15 @@
 import pytest
 
 from crawlster.config import Configuration
-from crawlster.exceptions import MissingValueError, ConfigurationError
 from crawlster.validators import validate_isinstance, \
     ValidationError, one_of, is_url
 
 
 @pytest.mark.parametrize('config_opts, exc_type', [
     (
-            # missing core.start_urls
-            {'core.start_step': 'test'},
-            MissingValueError
-    ),
-    (
             # wrong core.start_urls type
             {'core.start_urls': 'Hello there', 'core.start_step': 'test'},
-            ConfigurationError
+            ValidationError
     )
 ])
 def test_config_bad_init(config_opts, exc_type):
@@ -41,10 +35,10 @@ def test_config_good_init(config_opts):
     (validate_isinstance(float), 100.2, False),
     (validate_isinstance(str), 10, True),
     (validate_isinstance(bool), 10, True),
-    (one_of(1, 2, 3), 3, False),
-    (one_of(1, 2, 3), 4, True),
-    (one_of('item1', 'item2', 'item3'), 'item1', False),
-    (one_of('item1', 'item2', 'item3'), 'item5', True),
+    (one_of((1, 2, 3)), 3, False),
+    (one_of((1, 2, 3)), 4, True),
+    (one_of(('item1', 'item2', 'item3')), 'item1', False),
+    (one_of(('item1', 'item2', 'item3')), 'item5', True),
     (is_url, 'http://localhost:2222/test', False),
     (is_url, 'http://localhost:2222', False),
     (is_url, 'this_is_invalid', True),

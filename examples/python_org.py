@@ -8,7 +8,7 @@ written in a ``pymodules.jsonl`` file in the current directory.
 import pprint
 
 from crawlster.config.config import JsonConfiguration
-from crawlster.core import Crawlster
+from crawlster.core import Crawlster, start
 from crawlster.handlers.jsonl import JsonLinesHandler
 from crawlster.handlers.log_handler import LogItemHandler
 
@@ -17,11 +17,10 @@ class PythonOrgCrawler(Crawlster):
     """
     This is an example crawler used to crawl info about all the Python modules
     """
-    config = JsonConfiguration('examples/python_org_config.json')
-
     item_handler = [LogItemHandler(),
                     JsonLinesHandler('items.jsonl')]
 
+    @start
     def step_start(self, url):
         data = self.http.get(url)
         if not data:
@@ -54,6 +53,7 @@ class PythonOrgCrawler(Crawlster):
 
 
 if __name__ == '__main__':
-    crawler = PythonOrgCrawler()
+    crawler = PythonOrgCrawler(
+        JsonConfiguration('examples/python_org_config.json'))
     crawler.start()
     pprint.pprint(crawler.stats.dump())
