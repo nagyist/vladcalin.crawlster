@@ -16,8 +16,8 @@ from crawlster.helpers.stats import StatsHelper
 
 
 def start(method):
-    """Decorator for specifying the start step. 
-    
+    """Decorator for specifying the start step.
+
     Must decorate a single method from the crawler class"""
     method._crawlster_start_step = True
     return method
@@ -86,6 +86,7 @@ class Crawlster(object):
     log = LoggingHelper()
     http = RequestsHelper()
     queue = QueueHelper(strategy='lifo')
+    # other helpers
     urls = UrlsHelper()
     regex = RegexHelper()
     extract = ExtractHelper()
